@@ -1,0 +1,473 @@
+(() => {
+  'use strict';
+
+  const course = JSON.parse(document.getElementById('courseData').textContent);
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const storageKey = 'aiteacher-demo-state-v1';
+  const initialGreeting = 'AI老师';
+
+  const state = {
+    lessonIndex: 0,
+    completed: new Set(),
+    lastAction: '',
+    constructedPhrase: [],
+    attempts: 0,
+    busy: false,
+    autoVoice: true,
+    quiet: false,
+    preferences: { name: '', modes: [], interests: '', speechRate: 0.86 },
+    messages: [{ role: 'assistant', content: initialGreeting }],
+  };
+
+  let mediaRecorder = null;
+  let mediaStream = null;
+  let audioChunks = [];
+  let recordStartedAt = 0;
+  let recordTimer = null;
+  let waitTimer = null;
+
+  function restoreState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      state.lessonIndex = Math.max(0, Math.min(course.lessons.length - 1, Number(saved.lessonIndex) || 0));
+      state.completed = new Set(Array.isArray(saved.completed) ? saved.completed : []);
+      state.attempts = Number(saved.attempts) || 0;
+      state.autoVoice = saved.autoVoice !== false;
+      state.quiet = Boolean(saved.quiet);
+      state.preferences = { ...state.preferences, ...(saved.preferences || {}) };
+    } catch (_) { /* A fresh state is safe when browser storage is unavailable. */ }
+  }
+
+  function persistState() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        lessonIndex: state.lessonIndex,
+        completed: [...state.completed],
+        attempts: state.attempts,
+        autoVoice: state.autoVoice,
+        quiet: state.quiet,
+        preferences: state.preferences,
+      }));
+    } catch (_) { /* The lesson remains usable without persistence. */ }
+  }
+
+  function escapeHtml(value) {
+    const node = document.createElement('div');
+    node.textContent = String(value || '');
+    return node.innerHTML;
+  }
+
+  function showToast(message) {
+    const toast = $('#toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 2300);
+  }
+
+  function speak(text, force = false) {
+    if ((!state.autoVoice && !force) || state.quiet || !('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text.replace(/[*#`]/g, ''));
+    utterance.lang = 'zh-CN';
+    utterance.rate = Number(state.preferences.speechRate) || 0.86;
+    utterance.pitch = 1.02;
+    const voices = window.speechSynthesis.getVoices();
+    const chineseVoice = voices.find(voice => /^zh/i.test(voice.lang));
+    if (chineseVoice) utterance.voice = chineseVoice;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function currentLesson() { return course.lessons[state.lessonIndex]; }
+
+  function updateProgress() {
+    const total = course.lessons.length;
+    $('#progressLabel').textContent = `${state.lessonIndex + 1} / ${total}`;
+    $('#progressFill').style.width = `${((state.lessonIndex + 1) / total) * 100}%`;
+    $('#progressTrack').setAttribute('aria-valuenow', String(state.lessonIndex + 1));
+    $('#attemptCount').textContent = `${state.attempts} 次主动表达`;
+    $$('.lesson-tab').forEach((tab, index) => {
+      const lesson = course.lessons[index];
+      tab.classList.toggle('active', index === state.lessonIndex);
+      tab.classList.toggle('completed', state.completed.has(lesson.id));
+      tab.setAttribute('aria-current', index === state.lessonIndex ? 'step' : 'false');
+      if (!state.completed.has(lesson.id)) {
+        const number = $('.tab-number', tab);
+        number.innerHTML = index === state.lessonIndex ? '<span class="play-triangle"></span>' : String(index + 1);
+      }
+    });
+    persistState();
+  }
+
+  function renderPhraseBuilder(lesson) {
+    const builder = $('#phraseBuilder');
+    const grid = $('#choiceGrid');
+    $('.token-row', grid)?.remove();
+    if (!lesson.tokens) {
+      builder.hidden = true;
+      return;
+    }
+    builder.hidden = false;
+    const slots = $('#phraseSlots');
+    slots.innerHTML = state.constructedPhrase.length
+      ? state.constructedPhrase.map(word => `<span class="word-chip">${escapeHtml(word)}</span>`).join('')
+      : '<span class="empty-phrase">点下面的词，拼成一句话</span>';
+    const tokenRow = document.createElement('div');
+    tokenRow.className = 'token-row';
+    lesson.tokens.forEach(token => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'token-card';
+      button.textContent = token;
+      button.addEventListener('click', () => {
+        if (state.constructedPhrase.length < lesson.tokens.length) state.constructedPhrase.push(token);
+        state.lastAction = `孩子点了词卡“${token}”，目前拼出“${state.constructedPhrase.join('')}”`;
+        renderLessonPhraseOnly();
+        pulseContext();
+      });
+      tokenRow.appendChild(button);
+    });
+    grid.prepend(tokenRow);
+  }
+
+  function renderLesson({ announce = false } = {}) {
+    const lesson = currentLesson();
+    state.lastAction = `进入了“${lesson.title}”环节`;
+    state.constructedPhrase = [];
+    $('#lessonEyebrow').textContent = lesson.eyebrow;
+    $('#lessonTitle').textContent = lesson.title;
+    $('#lessonInstruction').textContent = lesson.instruction;
+    $('#activityPrompt').textContent = lesson.prompt;
+    $('#coachNote').textContent = lesson.coach_note;
+    $('#headerLesson').textContent = lesson.title;
+    $('#contextRibbon').textContent = `正在关注“${lesson.title}”`;
+    $('#nextLesson span').textContent = state.lessonIndex === course.lessons.length - 1 ? '完成体验课' : '完成这一站';
+
+    const grid = $('#choiceGrid');
+    grid.innerHTML = '';
+    lesson.options.forEach(option => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'choice-card';
+      button.dataset.optionId = option.id;
+      button.innerHTML = `<span class="choice-emoji" aria-hidden="true">${escapeHtml(option.emoji)}</span><span class="choice-label">${escapeHtml(option.label)}</span><span class="choice-caption">点一下告诉老师</span>`;
+      button.setAttribute('aria-label', option.label);
+      button.addEventListener('click', () => chooseOption(option, button));
+      grid.appendChild(button);
+    });
+    renderPhraseBuilder(lesson);
+    updateProgress();
+    if (announce) speak(`${lesson.title}。${lesson.instruction}`);
+  }
+
+  function pulseContext() {
+    $('#contextStatus').textContent = '刚刚读到学习区的新变化';
+    $('#contextRibbon').textContent = state.lastAction || `正在关注“${currentLesson().title}”`;
+    window.clearTimeout(pulseContext.timer);
+    pulseContext.timer = window.setTimeout(() => {
+      $('#contextStatus').textContent = '已读懂右侧的学习内容';
+      $('#contextRibbon').textContent = `正在关注“${currentLesson().title}”`;
+    }, 3600);
+  }
+
+  function chooseOption(option, button) {
+    if (state.busy) return;
+    $$('.choice-card').forEach(card => card.classList.remove('selected'));
+    button.classList.add('selected');
+    let expression = option.spoken;
+    if (currentLesson().tokens && state.constructedPhrase.length) expression = state.constructedPhrase.join('');
+    state.lastAction = `孩子在“${currentLesson().title}”中选择了“${option.label}”，表达是“${expression}”`;
+    state.attempts += 1;
+    updateProgress();
+    pulseContext();
+    speak(expression, true);
+    addMessage('user', expression, { learningAction: true });
+    requestTeacherResponse(expression, { alreadyRendered: true });
+  }
+
+  function addMessage(role, content, options = {}) {
+    const article = document.createElement('article');
+    article.className = `message ${role === 'assistant' ? 'assistant-message' : 'user-message'}`;
+    if (options.learningAction) article.classList.add('learning-action');
+    const bubbleHtml = `${options.learningAction ? '<span class="learning-tag">来自学习区</span>' : ''}<div class="bubble"></div>`;
+    if (role === 'assistant') {
+      article.innerHTML = `<div class="mini-avatar" aria-hidden="true">A</div><div>${bubbleHtml}</div>`;
+    } else {
+      article.innerHTML = `<div>${bubbleHtml}</div>`;
+    }
+    $('.bubble', article).textContent = content;
+    $('#messages').appendChild(article);
+    $('#messages').scrollTop = $('#messages').scrollHeight;
+    if (!options.temporary) state.messages.push({ role, content });
+    return article;
+  }
+
+  function addTypingMessage() {
+    const article = document.createElement('article');
+    article.className = 'message assistant-message';
+    article.innerHTML = '<div class="mini-avatar" aria-hidden="true">A</div><div><div class="bubble typing-bubble"><i></i><i></i><i></i></div></div>';
+    $('#messages').appendChild(article);
+    $('#messages').scrollTop = $('#messages').scrollHeight;
+    return article;
+  }
+
+  function pageContext() {
+    const lesson = currentLesson();
+    return {
+      course_title: course.title,
+      lesson_title: lesson.title,
+      goal: lesson.goal,
+      visible_text: $('#learningPanel').innerText.slice(0, 2600),
+      last_action: state.lastAction,
+      constructed_phrase: state.constructedPhrase.join(''),
+      completed_lessons: [...state.completed],
+      preferences: state.preferences,
+    };
+  }
+
+  async function requestTeacherResponse(message, options = {}) {
+    const text = String(message || '').trim();
+    if (!text || state.busy) return;
+    state.busy = true;
+    $('#sendButton').disabled = true;
+    if (!options.alreadyRendered) addMessage('user', text);
+    const history = state.messages.slice(0, -1).slice(-16);
+    const typing = addTypingMessage();
+    let reply = '';
+    try {
+      const response = await fetch('/aiteacher/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history, page_context: pageContext() }),
+      });
+      if (!response.ok || !response.body) throw new Error('课堂连接失败');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let assistantBubble = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() || '';
+        for (const event of events) {
+          const line = event.split('\n').find(item => item.startsWith('data: '));
+          if (!line) continue;
+          const data = JSON.parse(line.slice(6));
+          if (data.type === 'delta') {
+            if (!assistantBubble) {
+              typing.remove();
+              const article = addMessage('assistant', '', { temporary: true });
+              assistantBubble = $('.bubble', article);
+            }
+            reply += data.text;
+            assistantBubble.textContent = reply;
+            $('#messages').scrollTop = $('#messages').scrollHeight;
+          } else if (data.type === 'error') {
+            throw new Error(data.message || 'AI老师暂时没有连上');
+          }
+        }
+      }
+      if (!reply.trim()) throw new Error('AI老师暂时没有返回内容');
+      state.messages.push({ role: 'assistant', content: reply.trim() });
+      speak(reply.trim());
+    } catch (error) {
+      typing.remove();
+      if (!reply) addMessage('assistant', error.message || 'AI老师暂时没有连上，请稍后再试。');
+      showToast(error.message || '课堂连接失败');
+    } finally {
+      state.busy = false;
+      $('#sendButton').disabled = false;
+    }
+  }
+
+  function sendComposerMessage() {
+    const input = $('#messageInput');
+    const text = input.value.trim();
+    if (!text || state.busy) return;
+    input.value = '';
+    input.style.height = '';
+    state.lastAction = '孩子通过左侧对话输入了一条消息';
+    requestTeacherResponse(text);
+  }
+
+  function completeLesson() {
+    const lesson = currentLesson();
+    state.completed.add(lesson.id);
+    if (state.lessonIndex < course.lessons.length - 1) {
+      state.lessonIndex += 1;
+      renderLesson({ announce: true });
+      $('#lessonStage').scrollTop = 0;
+      showToast('很好，下一站已经准备好了');
+    } else {
+      updateProgress();
+      showToast('体验课完成了，今天到这里也很好');
+      addMessage('assistant', '今天的练习完成了。你表达了自己的选择，这很重要。现在可以休息。');
+      speak('今天的练习完成了。你表达了自己的选择，这很重要。现在可以休息。');
+    }
+  }
+
+  function startWaitTimer() {
+    if (waitTimer) return;
+    const button = $('#waitButton');
+    let seconds = 5;
+    button.classList.add('counting');
+    $('#waitLabel').textContent = `安静等待 ${seconds}`;
+    waitTimer = window.setInterval(() => {
+      seconds -= 1;
+      $('#waitLabel').textContent = seconds > 0 ? `安静等待 ${seconds}` : '谢谢你愿意等';
+      if (seconds <= 0) {
+        window.clearInterval(waitTimer);
+        waitTimer = null;
+        window.setTimeout(() => {
+          button.classList.remove('counting');
+          $('#waitLabel').textContent = '留出 5 秒';
+        }, 1200);
+      }
+    }, 1000);
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      showToast('当前浏览器不支持录音，请使用文字输入');
+      return;
+    }
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferred = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(type => MediaRecorder.isTypeSupported(type));
+      mediaRecorder = preferred ? new MediaRecorder(mediaStream, { mimeType: preferred }) : new MediaRecorder(mediaStream);
+      audioChunks = [];
+      mediaRecorder.addEventListener('dataavailable', event => { if (event.data.size) audioChunks.push(event.data); });
+      mediaRecorder.addEventListener('stop', uploadRecording, { once: true });
+      mediaRecorder.start();
+      recordStartedAt = Date.now();
+      $('#recordingState').hidden = false;
+      recordTimer = window.setInterval(updateRecordingTime, 250);
+      updateRecordingTime();
+      window.setTimeout(() => { if (mediaRecorder?.state === 'recording') stopRecording(); }, 30000);
+    } catch (_) {
+      showToast('没有取得麦克风权限，可以继续打字');
+    }
+  }
+
+  function updateRecordingTime() {
+    const seconds = Math.floor((Date.now() - recordStartedAt) / 1000);
+    $('#recordingTime').textContent = `00:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function stopRecording() {
+    if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+    window.clearInterval(recordTimer);
+    $('#recordingState').hidden = true;
+    mediaStream?.getTracks().forEach(track => track.stop());
+  }
+
+  async function uploadRecording() {
+    if (!audioChunks.length) return;
+    const mime = mediaRecorder?.mimeType || 'audio/webm';
+    const ext = mime.includes('mp4') ? 'm4a' : mime.includes('ogg') ? 'ogg' : 'webm';
+    const form = new FormData();
+    form.append('audio', new Blob(audioChunks, { type: mime }), `speech.${ext}`);
+    showToast('正在听懂你说的话…');
+    try {
+      const response = await fetch('/aiteacher/api/asr', { method: 'POST', body: form });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || '语音识别失败');
+      $('#messageInput').value = result.text;
+      state.lastAction = '孩子用语音说了一句话';
+      sendComposerMessage();
+    } catch (error) {
+      showToast(error.message || '没有听清，请再说一次');
+    }
+  }
+
+  function openProfile() {
+    $('#learnerName').value = state.preferences.name || '';
+    $('#learnerInterests').value = state.preferences.interests || '';
+    $('#speechRate').value = String(state.preferences.speechRate || 0.86);
+    $$('input[name="mode"]').forEach(box => { box.checked = state.preferences.modes.includes(box.value); });
+    $('#profileDialog').showModal();
+  }
+
+  function saveProfile(event) {
+    if (event.submitter?.value === 'cancel') return;
+    event.preventDefault();
+    state.preferences = {
+      name: $('#learnerName').value.trim(),
+      modes: $$('input[name="mode"]:checked').map(box => box.value),
+      interests: $('#learnerInterests').value.trim(),
+      speechRate: Number($('#speechRate').value),
+    };
+    persistState();
+    $('#profileDialog').close();
+    showToast('学习偏好已保存');
+  }
+
+  function bindEvents() {
+    $('#sendButton').addEventListener('click', sendComposerMessage);
+    $('#messageInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendComposerMessage(); }
+    });
+    $('#messageInput').addEventListener('input', event => {
+      event.target.style.height = 'auto';
+      event.target.style.height = `${Math.min(event.target.scrollHeight, 100)}px`;
+    });
+    $('#starterPrompts').addEventListener('click', event => {
+      const prompt = event.target.closest('[data-prompt]');
+      if (prompt) requestTeacherResponse(prompt.dataset.prompt);
+    });
+    $('#messages').addEventListener('click', event => {
+      const replay = event.target.closest('[data-speak]');
+      if (replay) speak(replay.dataset.speak, true);
+    });
+    $('#listenPrompt').addEventListener('click', () => speak(`${currentLesson().prompt} ${currentLesson().instruction}`, true));
+    $('#waitButton').addEventListener('click', startWaitTimer);
+    $('#nextLesson').addEventListener('click', completeLesson);
+    $('#clearPhrase').addEventListener('click', () => { state.constructedPhrase = []; renderLessonPhraseOnly(true); });
+    $$('.lesson-tab').forEach(tab => tab.addEventListener('click', () => {
+      state.lessonIndex = Number(tab.dataset.lessonIndex);
+      renderLesson({ announce: false });
+    }));
+    $('#voiceOutputToggle').addEventListener('click', event => {
+      state.autoVoice = !state.autoVoice;
+      event.currentTarget.setAttribute('aria-pressed', String(state.autoVoice));
+      if (!state.autoVoice) window.speechSynthesis?.cancel();
+      persistState();
+      showToast(state.autoVoice ? '老师语音已开启' : '老师语音已关闭');
+    });
+    $('#quietToggle').addEventListener('click', event => {
+      state.quiet = !state.quiet;
+      document.body.classList.toggle('quiet-mode', state.quiet);
+      event.currentTarget.setAttribute('aria-pressed', String(state.quiet));
+      if (state.quiet) window.speechSynthesis?.cancel();
+      persistState();
+      showToast(state.quiet ? '已减少动画和声音' : '已退出安静模式');
+    });
+    $('#micButton').addEventListener('click', startRecording);
+    $('#stopRecording').addEventListener('click', stopRecording);
+    $('#profileOpen').addEventListener('click', openProfile);
+    $('#profileForm').addEventListener('submit', saveProfile);
+    $('.back-button').addEventListener('click', () => showToast('更多课程正在准备中'));
+  }
+
+  function renderLessonPhraseOnly(wasCleared = false) {
+    const lesson = currentLesson();
+    const slots = $('#phraseSlots');
+    slots.innerHTML = state.constructedPhrase.length
+      ? state.constructedPhrase.map(word => `<span class="word-chip">${escapeHtml(word)}</span>`).join('')
+      : '<span class="empty-phrase">点下面的词，拼成一句话</span>';
+    if (wasCleared) {
+      state.lastAction = '孩子清空了刚才拼的词，准备重新表达';
+      pulseContext();
+    }
+  }
+
+  restoreState();
+  document.body.classList.toggle('quiet-mode', state.quiet);
+  $('#quietToggle').setAttribute('aria-pressed', String(state.quiet));
+  $('#voiceOutputToggle').setAttribute('aria-pressed', String(state.autoVoice));
+  bindEvents();
+  renderLesson();
+})();

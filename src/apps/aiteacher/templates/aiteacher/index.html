@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8f2">
+  <meta name="description" content="AI老师——能理解学习内容、用文字与语音陪伴练习的 AI 教师。">
+  <title>AI老师 · AI 陪练课堂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('aiteacher.static', filename='app.css') }}">
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="AI老师首页">
+        <span class="brand-mark" aria-hidden="true"><span>A</span></span>
+        <span class="brand-copy"><strong>AI老师</strong><small>一起学，会更容易</small></span>
+      </a>
+
+      <div class="session-glance" aria-label="当前课程">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span>正在学习</span>
+        <strong id="headerLesson">{{ course.lessons[0].title }}</strong>
+      </div>
+
+      <nav class="top-actions" aria-label="课堂工具">
+        <button class="icon-button" id="quietToggle" type="button" aria-pressed="false" title="减少动画和声音">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.8L4.3 16a1 1 0 0 0 .88 1.47h13.64A1 1 0 0 0 19.7 16L18 12.8V9a6 6 0 0 0-6-6Zm-2 17h4"/></svg>
+          <span>安静模式</span>
+        </button>
+        <button class="profile-button" id="profileOpen" type="button">
+          <span class="profile-avatar" aria-hidden="true">小</span>
+          <span>学习偏好</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main class="classroom">
+      <section class="chat-panel" aria-labelledby="chatTitle">
+        <header class="panel-heading">
+          <div class="teacher-identity">
+            <div class="teacher-avatar" aria-hidden="true">
+              <span class="avatar-face">A</span><span class="online-badge"></span>
+            </div>
+            <div>
+              <div class="title-row"><h1 id="chatTitle">AI老师</h1><span class="ai-label">AI</span></div>
+              <p><span class="context-pulse"></span><span id="contextStatus">已读懂右侧的学习内容</span></p>
+            </div>
+          </div>
+          <button class="round-button" id="voiceOutputToggle" type="button" aria-pressed="true" title="关闭老师语音">
+            <svg class="sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6.7 9H3v6h3.7l4.3 4V5Zm4.5 3.5a5 5 0 0 1 0 7M18 6a8 8 0 0 1 0 12"/></svg>
+            <span class="sr-only">老师语音</span>
+          </button>
+        </header>
+
+        <div class="context-ribbon" aria-live="polite">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M13 4h7v7m0-7-9 9"/></svg>
+          <span>课堂联动</span>
+          <strong id="contextRibbon">正在关注“{{ course.lessons[0].title }}”</strong>
+        </div>
+
+        <div class="messages" id="messages" role="log" aria-live="polite" aria-label="与 AI老师的对话">
+          <div class="day-divider"><span>今天的练习</span></div>
+          <article class="message assistant-message">
+            <div class="mini-avatar" aria-hidden="true">A</div>
+            <div>
+              <div class="bubble">你好，我是AI老师。我们慢慢来。右边有三个选择，点一个你喜欢的就可以。</div>
+              <button class="replay-button" type="button" data-speak="你好，我是AI老师。我们慢慢来。右边有三个选择，点一个你喜欢的就可以。">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8v4h3l4 3V5L7 8H4Zm10-1a4 4 0 0 1 0 6"/></svg>听一遍
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <div class="starter-prompts" id="starterPrompts" aria-label="可以这样说">
+          <button type="button" data-prompt="我不知道怎么开始">我不知道怎么开始</button>
+          <button type="button" data-prompt="请再说慢一点">请再说慢一点</button>
+          <button type="button" data-prompt="我想休息一下">我想休息一下</button>
+        </div>
+
+        <div class="composer-wrap">
+          <div class="recording-state" id="recordingState" hidden>
+            <span class="recording-dot"></span><strong>我在听…</strong><span id="recordingTime">00:00</span>
+            <button type="button" id="stopRecording">说完了</button>
+          </div>
+          <div class="composer">
+            <textarea id="messageInput" rows="1" maxlength="1200" placeholder="打字告诉 AI老师…" aria-label="输入消息"></textarea>
+            <button class="mic-button" id="micButton" type="button" title="按下开始说话">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm6-3a6 6 0 0 1-12 0m6 6v4m-3 0h6"/></svg>
+            </button>
+            <button class="send-button" id="sendButton" type="button" aria-label="发送消息">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 15-7-4 14-3-6-8-1Zm8 1 7-8"/></svg>
+            </button>
+          </div>
+          <p class="composer-hint">文字和录音仅用于本次陪练 · 回车发送，Shift + 回车换行</p>
+        </div>
+      </section>
+
+      <section class="learning-panel" id="learningPanel" aria-labelledby="courseTitle">
+        <header class="course-header">
+          <div class="course-title-wrap">
+            <button class="back-button" type="button" aria-label="返回课程列表" title="更多课程即将上线">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div>
+              <div class="course-kicker"><span>体验课程</span><span class="dot-separator">·</span><span>约 8 分钟</span></div>
+              <h2 id="courseTitle">{{ course.title }}</h2>
+            </div>
+          </div>
+          <div class="course-progress-wrap">
+            <div class="progress-copy"><span>课程进度</span><strong id="progressLabel">1 / {{ course.lessons|length }}</strong></div>
+            <div class="progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="{{ course.lessons|length }}" aria-valuenow="1" id="progressTrack">
+              <span id="progressFill" style="width: {{ 100 / course.lessons|length }}%"></span>
+            </div>
+          </div>
+        </header>
+
+        <nav class="lesson-tabs" id="lessonTabs" aria-label="课程环节">
+          {% for lesson in course.lessons %}
+          <button type="button" class="lesson-tab{% if loop.first %} active{% endif %}" data-lesson-index="{{ loop.index0 }}" aria-current="{% if loop.first %}step{% else %}false{% endif %}">
+            <span class="tab-number">{% if loop.first %}<span class="play-triangle"></span>{% else %}{{ loop.index }}{% endif %}</span>
+            <span>{{ lesson.title }}</span>
+          </button>
+          {% endfor %}
+        </nav>
+
+        <div class="lesson-stage" id="lessonStage">
+          <section class="lesson-card">
+            <div class="lesson-copy">
+              <span class="lesson-eyebrow" id="lessonEyebrow"></span>
+              <h3 id="lessonTitle"></h3>
+              <p id="lessonInstruction"></p>
+              <button class="listen-prompt" id="listenPrompt" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Zm12 .5a4 4 0 0 1 0 5"/></svg>
+                听老师说
+              </button>
+            </div>
+            <div class="prompt-orbit" aria-hidden="true"><span>听</span><i></i><i></i></div>
+          </section>
+
+          <section class="activity-card" aria-labelledby="activityPrompt">
+            <div class="activity-heading">
+              <div>
+                <span class="activity-label">现在试一试</span>
+                <h3 id="activityPrompt"></h3>
+              </div>
+              <div class="wait-tool">
+                <button id="waitButton" type="button" title="给孩子留出回应时间">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l2.5 2.5M7 3h10M12 3v2m7 7a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+                  <span id="waitLabel">留出 5 秒</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="phrase-builder" id="phraseBuilder" hidden>
+              <div class="phrase-slots" id="phraseSlots" aria-live="polite"></div>
+              <button type="button" id="clearPhrase">重新拼</button>
+            </div>
+
+            <div class="choice-grid" id="choiceGrid"></div>
+
+            <div class="coach-note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-4 12.74V19h8v-3.26A7 7 0 0 0 12 3Zm-3 19h6"/></svg>
+              <p id="coachNote"></p>
+            </div>
+          </section>
+        </div>
+
+        <footer class="lesson-footer">
+          <div class="session-observation">
+            <span class="observation-icon" aria-hidden="true">✦</span>
+            <p><strong id="attemptCount">0 次主动表达</strong><span>每一种表达方式都算数</span></p>
+          </div>
+          <button class="next-button" id="nextLesson" type="button">
+            <span>完成这一站</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="profile-dialog" id="profileDialog">
+    <form method="dialog" id="profileForm">
+      <header>
+        <div><span class="dialog-kicker">让陪练更合适</span><h2>学习偏好</h2></div>
+        <button value="cancel" class="dialog-close" aria-label="关闭" type="submit">×</button>
+      </header>
+      <p class="dialog-intro">不用填写诊断信息。偏好保存在当前浏览器；对话时会随课堂内容发送给 AI老师，用来调整称呼、表达方式和语速。</p>
+      <label>孩子希望怎么被称呼？<input id="learnerName" type="text" maxlength="20" placeholder="例如：小雨（选填）"></label>
+      <fieldset>
+        <legend>目前常用的表达方式</legend>
+        <div class="chip-options">
+          <label><input type="checkbox" name="mode" value="口语"><span>口语</span></label>
+          <label><input type="checkbox" name="mode" value="发声"><span>发声</span></label>
+          <label><input type="checkbox" name="mode" value="手势或指点"><span>手势 / 指点</span></label>
+          <label><input type="checkbox" name="mode" value="图片沟通"><span>图片沟通</span></label>
+        </div>
+      </fieldset>
+      <label>喜欢的事物<input id="learnerInterests" type="text" maxlength="80" placeholder="例如：小汽车、数字、摇摆"></label>
+      <label>老师说话速度
+        <select id="speechRate"><option value="0.72">慢一些</option><option value="0.86" selected>自然偏慢</option><option value="1">正常</option></select>
+      </label>
+      <div class="dialog-actions"><button class="save-profile" value="default" type="submit">保存偏好</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script id="courseData" type="application/json">{{ course|tojson }}</script>
+  <script src="{{ url_for('aiteacher.static', filename='app.js') }}" defer></script>
+</body>
+</html>

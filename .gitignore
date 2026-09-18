@@ -1,0 +1,155 @@
+# ============================================
+# 白名单策略：忽略根目录所有文件，只允许特定文件
+# ============================================
+
+# 首先忽略根目录下所有文件
+/*
+
+# 然后明确指定要追踪的文件和目录（白名单）
+
+# Python 应用核心文件
+!/app.py
+!/gunicorn.conf.py
+
+# 配置文件
+!/config/
+!/requirements.txt
+
+# 源代码目录（包含所有子目录：static, templates, routes, services等）
+!/src/
+
+# MCP Server
+!/mcp-server/
+
+# 根目录静态文件
+!/favicon.ico
+!/CNAME
+
+# 必要的文档（仅保留最重要的）
+!/README.md
+!/QUICK_START.md
+!/PRODUCT_INTRO_EN.md
+
+# 部署脚本
+!/deploy*.sh
+!/restart*.sh
+!/stop.sh
+!/git-commit-push.sh
+
+# Nginx 配置（如果需要）
+!nginx*.conf
+!vhost*.conf
+
+# Skills 目录
+!/skills/
+
+# .well-known
+!/.well-known/
+
+# ============================================
+# 全局忽略规则（适用于所有目录）
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.egg-info/
+dist/
+build/
+*.pyc
+
+# Logs
+logs/*
+*.log
+
+# Environment
+.env
+.venv/
+env/
+venv/
+ENV/
+.conda/
+
+# IDE
+.vscode/
+.lingma/
+.idea/
+.minimax/
+.waylog/
+.cursorrules
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive files
+*.pem
+*.key
+aws_goodpage_key.pem
+/config/config_local.py
+
+# Debug and test files
+debug/
+test*.py
+test_*.py
+*_test.py
+check*.py
+verify*.py
+
+# Temporary documentation
+BUGFIX*.md
+FIX*.md
+IMPLEMENTATION*.md
+TROUBLESHOOTING*.md
+DEBUG*.md
+QUICKSTART*.md
+DEPLOY*.md
+STARTUP*.md
+FEATURE*.md
+ANALYSIS*.md
+REPORT*.md
+SUMMARY*.md
+*GUIDE.md
+
+# Temporary scripts
+cleanup*.sh
+dev.sh
+start_dev.sh
+setup*.sh
+test*.sh
+check*.sh
+
+# User data
+userdata/
+userfiles/
+
+# Examples and demos
+examples/
+demos/
+samples/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache and temp files
+*.cache
+*.tmp
+*.temp
+~*$
+*.swp
+*.swo
+
+# Node modules (if any)
+node_modules/
+
+# Build outputs
+build/
+dist/
+*.egg
+
+# 开源仓库必须保留的根文件（覆盖上面的白名单/临时脚本规则）
+!/.gitignore
+!/start_dev.sh

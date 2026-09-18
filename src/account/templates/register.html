@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ t('register_title') }} - {{ t('brand_name') }}</title>
+    <link rel="stylesheet" href="{{ url_for('account.static', filename='css/account.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="{{ url_for('account.static', filename='js/account.js') }}"></script>
+    <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+
+</head>
+<body class="login-body">
+    <div class="container">
+        <div class="form-container">
+            <a href="/" class="login-logo-link">
+                <img src="/favicon.ico" alt="{{ t('logo_alt') }}" class="login-logo">
+                <span class="brand-name">{{ t('brand_name') }}</span>
+            </a>
+            <h2>{{ t('register') }}</h2>
+
+            <div class="form-group">
+                <label for="email">{{ t('email') }}</label>
+                <input type="text" id="email" placeholder="{{ t('enter_email') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="username">{{ t('username') }}</label>
+                <input type="text" id="username" placeholder="{{ t('choose_username') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="password">{{ t('password') }}</label>
+                <input type="password" id="password" placeholder="{{ t('create_password') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">{{ t('confirm_password') }}</label>
+                <input type="password" id="confirmPassword" placeholder="{{ t('confirm_password_placeholder') }}">
+            </div>
+
+            <button class="submit-btn">{{ t('register') }}</button>
+
+            <div class="form-footer">
+                <span>{{ t('has_account') }}</span>
+                <a href="{{ url_for('account.login_page') }}">{{ t('login') }}</a>
+            </div>
+
+            <div class="back-home">
+                <a href="/">← {{ t('back_to_home') }}</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

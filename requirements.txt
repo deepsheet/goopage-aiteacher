@@ -1,0 +1,23 @@
+# Web application
+Flask>=2.3,<4
+Flask-Cors>=4,<7
+Flask-Session>=0.8,<1
+python-dotenv>=1,<2
+requests>=2.31,<3
+redis>=4.6,<7
+PyMySQL>=1.1,<2
+
+# Production server
+gunicorn>=21,<24
+gevent>=23.9
+
+# File storage and content extraction
+beautifulsoup4>=4.12,<5
+numpy>=1.24,<3
+opencv-python>=4.8
+openpyxl>=3.1,<4
+oss2>=2.18,<3
+pdfminer.six>=20221105
+Pillow>=10,<13
+pytesseract>=0.3.10,<1
+python-docx>=1.1,<2
