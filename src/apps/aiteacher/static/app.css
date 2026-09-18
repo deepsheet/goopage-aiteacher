@@ -230,7 +230,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .material-dialog-body { padding: 25px; }
 .material-dialog header { display: flex; justify-content: space-between; align-items: flex-start; }
 .material-dialog h2 { margin: 4px 0 0; font-size: 24px; }
-.material-mode-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin: 20px 0 18px; padding: 5px; border-radius: 14px; background: #f1f3ef; }
+.material-mode-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 20px 0 18px; padding: 5px; border-radius: 14px; background: #f1f3ef; }
 .material-mode-tabs button { border: 0; border-radius: 10px; padding: 10px 8px; color: #737b73; background: transparent; cursor: pointer; font-size: 11px; font-weight: 700; }
 .material-mode-tabs button.active { color: var(--green-dark); background: #fff; box-shadow: 0 3px 12px rgba(49,67,54,.08); }
 .material-mode-tabs button span { margin-right: 4px; }

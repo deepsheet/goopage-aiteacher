@@ -14,6 +14,9 @@ from flask import (
 
 from src.apps.aiteacher import aiteacher_bp
 from src.apps.aiteacher.course import DEMO_COURSE, SYSTEM_PROMPT
+from src.apps.aiteacher.builtin_materials import (
+    list_builtin_materials, load_builtin_material,
+)
 from src.apps.aiteacher.materials import (
     MaterialError, create_generated_material, create_uploaded_material,
     create_url_material, list_materials, load_material, safe_owner_name,
@@ -123,9 +126,39 @@ def _material_summary_payload(material):
     }
 
 
+def _builtin_payload(material):
+    return {
+        'id': material['id'],
+        'title': material['title'],
+        'subtitle': material.get('subtitle', ''),
+        'description': material.get('description', ''),
+        'duration': material.get('duration', ''),
+        'source_type': 'builtin',
+        'source_label': material.get('source_label', '系统内置教程'),
+        'text': material.get('text', ''),
+        'viewer_url': url_for(
+            'aiteacher.view_builtin_material', material_id=material['id']),
+    }
+
+
 def _hydrate_material_context(body):
     """用服务端已保存的正文覆盖前端材料上下文，避免丢失或篡改。"""
     page_context = body.get('page_context') or {}
+    builtin_id = page_context.get('builtin_id')
+    if builtin_id:
+        metadata, _ = load_builtin_material(builtin_id)
+        hydrated = dict(body)
+        hydrated_context = dict(page_context)
+        hydrated_context.update({
+            'course_title': metadata['title'],
+            'lesson_title': '系统内置教程',
+            'goal': metadata.get('description', ''),
+            'material_type': 'builtin',
+            'material_source': metadata.get('source_label', ''),
+            'visible_text': metadata.get('text', ''),
+        })
+        hydrated['page_context'] = hydrated_context
+        return hydrated
     material_id = page_context.get('material_id')
     if not material_id:
         return body
@@ -167,6 +200,23 @@ def generate_material():
     except Exception as exc:
         logger.error('生成学习材料失败: %s', exc)
         return jsonify({'success': False, 'error': 'AI 暂时无法生成课件，请稍后再试'}), 502
+
+
+@aiteacher_bp.route('/api/builtin-materials')
+def builtin_materials():
+    return jsonify({
+        'success': True,
+        'materials': [_builtin_payload(item) for item in list_builtin_materials()],
+    })
+
+
+@aiteacher_bp.route('/api/builtin-materials/<material_id>')
+def builtin_material(material_id):
+    try:
+        material, _ = load_builtin_material(material_id)
+        return jsonify({'success': True, 'material': _builtin_payload(material)})
+    except FileNotFoundError:
+        return jsonify({'success': False, 'error': '内置教程不存在'}), 404
 
 
 @aiteacher_bp.route('/api/materials')
@@ -243,6 +293,22 @@ def view_material(material_id):
         "script-src 'unsafe-inline'; img-src data: blob: https: http:; "
         "font-src data: https: http:; media-src data: blob: https: http:; "
         "connect-src 'none'; frame-src 'none'; form-action 'none';"
+    )
+    return response
+
+
+@aiteacher_bp.route('/builtins/<material_id>')
+def view_builtin_material(material_id):
+    try:
+        _, viewer_path = load_builtin_material(material_id)
+    except FileNotFoundError:
+        return jsonify({'success': False, 'error': '内置教程不存在'}), 404
+    response = send_file(viewer_path, mimetype='text/html')
+    response.headers['Cache-Control'] = 'public, max-age=300'
+    response.headers['Content-Security-Policy'] = (
+        "sandbox allow-scripts; default-src 'none'; "
+        "style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
+        "img-src data:; connect-src 'none'; frame-src 'none'; form-action 'none';"
     )
     return response
 

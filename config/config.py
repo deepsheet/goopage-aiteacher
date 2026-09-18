@@ -15,9 +15,6 @@ QWEN_API_KEY = ""
 QWEN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 QWEN_MODEL = "qwen-plus"
 
-# QWEN 多模态模型（图片识别等）
-QWEN_VL_MODEL = "qwen-vl-max"
-
 # 当前使用的模型选择（deepseek、qwen）
 CURRENT_MODEL = "deepseek"
 
@@ -84,30 +81,6 @@ STORAGE_CONFIG = {
         'cdn_domain': None,          # CDN 域名（如 cdn.example.com）
     },
 }
-
-# ============================================================
-# AI 生成配置
-# ============================================================
-
-# 最大输入字符数
-MAX_INPUT_CHARS = 20000
-
-# 默认 max_tokens（输出 token 上限）
-DEFAULT_MAX_TOKENS = 4096
-
-# 前端静态资源版本号（修改 JS/CSS 后手动增大，用于强制刷新浏览器缓存）
-JS_VERSION = '1'
-
-# ============================================================
-# Get Config 工具函数
-# ============================================================
-
-def get_config(key, default=None):
-    """获取配置项（支持通过模块全局变量名访问）"""
-    import sys
-    this_module = sys.modules[__name__]
-    return getattr(this_module, key, default)
-
 
 # ============================================================
 # 本机配置覆盖

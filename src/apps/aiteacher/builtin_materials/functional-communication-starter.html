@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>把想法说出来 · 功能性沟通体验课</title>
+  <style>
+    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --warm:#fff7e8; --paper:#fff; --canvas:#f4f6f1; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font:16px/1.7 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif; }
+    button { font:inherit; color:inherit; }
+    button:focus-visible { outline:3px solid rgba(38,112,91,.28); outline-offset:3px; }
+    .hero { padding:clamp(28px,6vw,58px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#1d5848,#357d67); }
+    .hero-inner, main { width:min(920px,100%); margin:auto; }
+    .eyebrow { display:inline-flex; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.14); font-size:12px; font-weight:800; letter-spacing:.08em; }
+    h1 { margin:12px 0 8px; font-size:clamp(30px,6vw,48px); line-height:1.15; }
+    .hero p { max-width:650px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(15px,2.5vw,18px); }
+    .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .principles span { padding:7px 10px; border:1px solid rgba(255,255,255,.22); border-radius:10px; background:rgba(255,255,255,.08); font-size:12px; }
+    main { padding:20px clamp(14px,4vw,30px) 54px; }
+    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 18px; padding:14px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
+    .progress-copy { display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; }.progress-copy strong { color:var(--green); }
+    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:25%; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
+    .station-nav { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .station-nav button { min-height:44px; border:1px solid transparent; border-radius:11px; padding:7px 8px; color:var(--muted); background:#f2f4f0; cursor:pointer; font-size:12px; font-weight:700; }
+    .station-nav button.active { color:var(--dark); border-color:#bcd4c4; background:var(--soft); }
+    .station { display:none; }.station.active { display:block; animation:rise .2s ease-out; }
+    .lesson-card, .practice-card { border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .lesson-card { min-height:260px; padding:clamp(24px,5vw,46px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
+    .lesson-card::after { content:""; position:absolute; right:-55px; top:-65px; width:210px; height:210px; border:1px solid rgba(38,112,91,.12); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.17),0 0 0 48px rgba(255,255,255,.1); }
+    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }.lesson-card h2 { max-width:620px; margin:8px 0; font-size:clamp(27px,5vw,39px); line-height:1.2; }.lesson-card p { max-width:620px; margin:0 0 18px; color:#53635a; }
+    .speak-button, .wait-button, .next-button { border:0; border-radius:11px; cursor:pointer; font-weight:800; }
+    .speak-button { padding:10px 14px; color:var(--dark); background:#fff; box-shadow:0 4px 16px rgba(38,112,91,.08); }
+    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }.practice-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }.practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }.practice-head h3 { margin:5px 0 0; font-size:clamp(20px,4vw,27px); }.wait-button { padding:9px 12px; color:#657067; background:#f1f3ef; font-size:12px; }
+    .choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:22px 0 16px; }.choice { min-height:126px; border:1px solid var(--line); border-radius:18px; display:grid; place-items:center; align-content:center; gap:4px; background:#fbfcf9; cursor:pointer; }.choice:hover,.choice.selected { border-color:#8db6a0; background:var(--soft); transform:translateY(-2px); }.choice .emoji { font-size:32px; }.choice strong { font-size:16px; }.choice small { color:#879088; font-size:11px; }
+    .word-builder { margin:20px 0 4px; padding:15px; border-radius:15px; background:#f1eefb; }.sentence { min-height:48px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:10px; }.sentence span { padding:8px 12px; border-radius:9px; color:#514771; background:#fff; font-weight:800; }.word-buttons { display:flex; flex-wrap:wrap; gap:8px; }.word-buttons button { border:1px solid #d7d0ed; border-radius:10px; padding:8px 12px; color:#514771; background:#fff; cursor:pointer; font-weight:700; }
+    .coach { display:flex; gap:10px; align-items:flex-start; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }.coach strong { flex:0 0 auto; }.lesson-actions { display:flex; justify-content:flex-end; margin-top:16px; }.next-button { padding:11px 18px; color:#fff; background:var(--green); }.next-button:hover { background:var(--dark); }
+    .feedback { min-height:28px; margin:10px 0 0; color:var(--green); font-weight:800; text-align:center; }
+    .complete { text-align:center; padding:35px 20px; }.complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }.complete h2 { margin:15px 0 5px; }.complete p { color:var(--muted); }
+    @keyframes rise { from { opacity:0; transform:translateY(6px); } }
+    @media(max-width:620px){ .station-nav { grid-template-columns:repeat(2,1fr); }.choices { grid-template-columns:1fr; }.choice { min-height:90px; grid-template-columns:auto 1fr; justify-items:start; padding:12px 18px; }.choice small { grid-column:2; }.practice-head { flex-direction:column; }.wait-button { align-self:flex-end; } }
+    @media(prefers-reduced-motion:reduce){ * { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">体验课程 · 约 8 分钟</span>
+      <h1>把想法说出来</h1>
+      <p>从选择喜欢的东西开始，练习请求、拒绝、求助和轮流。点选、手势、图片、发声和口语，都是有效的沟通。</p>
+      <div class="principles"><span>不强迫对视</span><span>一次一个短提示</span><span>留出至少 5 秒</span><span>先回应意图</span></div>
+    </div>
+  </header>
+  <main>
+    <section class="progress-card" aria-label="课程进度">
+      <div class="progress-copy"><span>课程进度</span><strong id="progressText">1 / 4</strong></div>
+      <div class="track"><span id="progressFill"></span></div>
+      <nav class="station-nav" id="stationNav">
+        <button class="active" data-step="0">1 你想玩什么？</button><button data-step="1">2 把愿望变成一句话</button><button data-step="2">3 说“不”也很有用</button><button data-step="3">4 轮到谁了？</button>
+      </nav>
+    </section>
+
+    <section class="station active" data-station="0">
+      <div class="lesson-card"><span class="step">第 1 站 · 我来选择</span><h2>你想玩什么？</h2><p>点一个你喜欢的。指一指、点一下，或者说出来，都可以。</p><button class="speak-button" data-speak="你想玩什么？点一个你喜欢的。">🔊 听老师说</button></div>
+      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>你想要哪一个？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="选择了泡泡" data-spoken="泡泡"><span class="emoji">🫧</span><strong>泡泡</strong><small>点一下告诉老师</small></button><button class="choice" data-action="选择了小车" data-spoken="小车"><span class="emoji">🚗</span><strong>小车</strong><small>点一下告诉老师</small></button><button class="choice" data-action="选择了音乐" data-spoken="音乐"><span class="emoji">🎵</span><strong>音乐</strong><small>点一下告诉老师</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>把选择权交给孩子。选择后立刻兑现或模拟兑现，不要求重复发音。</span></div><div class="lesson-actions"><button class="next-button" data-next="1">下一站 →</button></div></div>
+    </section>
+
+    <section class="station" data-station="1">
+      <div class="lesson-card"><span class="step">第 2 站 · 我会请求</span><h2>把愿望变成一句话</h2><p>按顺序点词卡，拼出你的话。只说“泡泡”也完全可以。</p><button class="speak-button" data-speak="你可以说，我要泡泡。">🔊 听老师说</button></div>
+      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>拼出“我要泡泡”</h3></div><button class="wait-button">留出 5 秒</button></div><div class="word-builder"><div class="sentence" id="sentence"><em>点下面的词，拼成一句话</em></div><div class="word-buttons"><button data-word="我">我</button><button data-word="要">要</button><button data-word="泡泡">泡泡</button><button data-clear>重新拼</button></div></div><div class="choices"><button class="choice" data-action="表达了我要泡泡" data-spoken="我要泡泡"><span class="emoji">🫧</span><strong>我要泡泡</strong><small>完整表达</small></button><button class="choice" data-action="表达了再来一次" data-spoken="再来一次"><span class="emoji">🔁</span><strong>再来一次</strong><small>请求重复</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>先示范“要 + 泡泡”，等待，再把孩子的表达自然扩展成“我要泡泡”。</span></div><div class="lesson-actions"><button class="next-button" data-next="2">下一站 →</button></div></div>
+    </section>
+
+    <section class="station" data-station="2">
+      <div class="lesson-card"><span class="step">第 3 站 · 我的意思很重要</span><h2>说“不”也很有用</h2><p>选一句最符合你现在想法的话。每一种选择都被尊重。</p><button class="speak-button" data-speak="你可以告诉我，不要，停一下，或者帮帮我。">🔊 听老师说</button></div>
+      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>你现在想说什么？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="表达了不要" data-spoken="不要"><span class="emoji">✋</span><strong>不要</strong><small>拒绝也很重要</small></button><button class="choice" data-action="表达了停一下" data-spoken="停一下"><span class="emoji">⏸️</span><strong>停一下</strong><small>请求暂停</small></button><button class="choice" data-action="表达了帮帮我" data-spoken="帮帮我"><span class="emoji">🤝</span><strong>帮帮我</strong><small>主动求助</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>孩子拒绝后请暂停活动。让“不”产生真实效果，沟通才值得继续。</span></div><div class="lesson-actions"><button class="next-button" data-next="3">下一站 →</button></div></div>
+    </section>
+
+    <section class="station" data-station="3">
+      <div class="lesson-card"><span class="step">第 4 站 · 一起玩</span><h2>轮到谁了？</h2><p>看一看轮到谁，再点对应的话。轮流只做 2—3 回合也可以。</p><button class="speak-button" data-speak="刚才老师吹了泡泡，现在轮到谁？">🔊 听老师说</button></div>
+      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>刚才老师玩了，现在轮到谁？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="表达了轮到我" data-spoken="轮到我"><span class="emoji">🙋</span><strong>轮到我</strong><small>我来玩</small></button><button class="choice" data-action="表达了轮到你" data-spoken="轮到你"><span class="emoji">🫵</span><strong>轮到你</strong><small>邀请别人</small></button><button class="choice" data-action="表达了结束了" data-spoken="结束了"><span class="emoji">✅</span><strong>结束了</strong><small>结束也是选择</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>轮流只做 2—3 回合即可，在孩子仍有兴趣时结束。</span></div><div class="lesson-actions"><button class="next-button" data-finish>完成课程 ✓</button></div></div>
+    </section>
+    <section class="complete" id="complete" hidden><div class="badge">✓</div><h2>今天的练习完成了</h2><p>你已经练习了选择、请求、拒绝和轮流。每一种表达方式都算数。</p><button class="next-button" data-restart>再练一次</button></section>
+  </main>
+  <script>
+    (() => {
+      let step = 0;
+      const words = [];
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+      function notify(action, spoken = '', respond = false) { parent.postMessage({ type:'aiteacher-learning-action', action, spoken, respond }, '*'); }
+      function go(index) {
+        step = Math.max(0, Math.min(3, Number(index) || 0));
+        $$('[data-station]').forEach((node, i) => node.classList.toggle('active', i === step));
+        $$('#stationNav button').forEach((node, i) => node.classList.toggle('active', i === step));
+        $('#progressText').textContent = `${step + 1} / 4`;
+        $('#progressFill').style.width = `${(step + 1) * 25}%`;
+        $('#complete').hidden = true;
+        window.scrollTo({ top:0, behavior:'smooth' });
+        notify(`进入第 ${step + 1} 站`);
+      }
+      $('#stationNav').addEventListener('click', e => { const button = e.target.closest('[data-step]'); if (button) go(button.dataset.step); });
+      document.addEventListener('click', e => {
+        const choice = e.target.closest('[data-action]');
+        if (choice) {
+          $$('.choice', choice.closest('.practice-card')).forEach(node => node.classList.remove('selected'));
+          choice.classList.add('selected');
+          $('.feedback', choice.closest('.practice-card')).textContent = `你表达了：“${choice.dataset.spoken}”`;
+          notify(choice.dataset.action, choice.dataset.spoken, true);
+        }
+        const next = e.target.closest('[data-next]'); if (next) go(next.dataset.next);
+        const speak = e.target.closest('[data-speak]'); if (speak) notify('点击了听老师说', speak.dataset.speak);
+        const wait = e.target.closest('.wait-button');
+        if (wait && !wait.dataset.busy) {
+          wait.dataset.busy = '1'; let seconds = 5;
+          const timer = setInterval(() => { seconds -= 1; wait.textContent = seconds > 0 ? `安静等待 ${seconds}` : '谢谢你愿意等'; if (!seconds) { clearInterval(timer); setTimeout(() => { wait.textContent='留出 5 秒'; delete wait.dataset.busy; }, 1000); } }, 1000);
+        }
+        const word = e.target.closest('[data-word]');
+        if (word) { words.push(word.dataset.word); $('#sentence').innerHTML = words.map(value => `<span>${value}</span>`).join(''); notify(`正在拼句子：${words.join('')}`); }
+        if (e.target.closest('[data-clear]')) { words.length = 0; $('#sentence').innerHTML = '<em>点下面的词，拼成一句话</em>'; notify('重新拼句子'); }
+        if (e.target.closest('[data-finish]')) { $$('[data-station]').forEach(node => node.classList.remove('active')); $('#complete').hidden=false; notify('完成了内置体验课程','今天的练习完成了'); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
+        if (e.target.closest('[data-restart]')) go(0);
+      });
+    })();
+  </script>
+</body>
+</html>

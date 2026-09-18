@@ -119,16 +119,16 @@
       <section class="learning-panel" id="learningPanel" aria-labelledby="courseTitle">
         <header class="course-header">
           <div class="course-title-wrap">
-            <button class="source-button" id="materialOpen" type="button" aria-label="选择学习材料" title="生成、打开或上传学习材料">
+            <button class="source-button" id="materialOpen" type="button" aria-label="选择学习教程" title="选择系统教程或其它学习材料">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-              <span>学习材料</span>
+              <span>选择教程</span>
             </button>
             <div>
               <div class="course-kicker"><span id="courseSourceLabel">体验课程</span><span class="dot-separator">·</span><span id="courseMetaLabel">约 8 分钟</span></div>
               <h2 id="courseTitle">{{ course.title }}</h2>
             </div>
           </div>
-          <div class="course-progress-wrap">
+          <div class="course-progress-wrap" hidden>
             <div class="progress-copy"><span>课程进度</span><strong id="progressLabel">1 / {{ course.lessons|length }}</strong></div>
             <div class="progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="{{ course.lessons|length }}" aria-valuenow="1" id="progressTrack">
               <span id="progressFill" style="width: {{ 100 / course.lessons|length }}%"></span>
@@ -136,7 +136,7 @@
           </div>
         </header>
 
-        <nav class="lesson-tabs" id="lessonTabs" aria-label="课程环节">
+        <nav class="lesson-tabs" id="lessonTabs" aria-label="课程环节" hidden>
           {% for lesson in course.lessons %}
           <button type="button" class="lesson-tab{% if loop.first %} active{% endif %}" data-lesson-index="{{ loop.index0 }}" aria-current="{% if loop.first %}step{% else %}false{% endif %}">
             <span class="tab-number">{% if loop.first %}<span class="play-triangle"></span>{% else %}{{ loop.index }}{% endif %}</span>
@@ -145,7 +145,7 @@
           {% endfor %}
         </nav>
 
-        <div class="lesson-stage" id="lessonStage">
+        <div class="lesson-stage" id="lessonStage" hidden>
           <section class="lesson-card">
             <div class="lesson-copy">
               <span class="lesson-eyebrow" id="lessonEyebrow"></span>
@@ -187,7 +187,7 @@
           </section>
         </div>
 
-        <footer class="lesson-footer">
+        <footer class="lesson-footer" hidden>
           <div class="session-observation">
             <span class="observation-icon" aria-hidden="true">✦</span>
             <p><strong id="attemptCount">0 次主动表达</strong><span>每一种表达方式都算数</span></p>
@@ -198,15 +198,14 @@
           </button>
         </footer>
 
-        <section class="material-viewer" id="materialViewer" hidden aria-label="自选学习材料">
+        <section class="material-viewer" id="materialViewer" aria-label="当前学习材料">
           <header class="material-viewer-bar">
             <div class="material-source-summary">
               <span class="material-type-badge" id="materialTypeBadge">学习材料</span>
               <span id="materialSourceText">AI老师已读取材料正文</span>
             </div>
             <div class="material-viewer-actions">
-              <button type="button" id="returnDemoCourse">返回体验课</button>
-              <button type="button" class="primary" id="replaceMaterial">更换材料</button>
+              <button type="button" class="primary" id="replaceMaterial">选择其它教程</button>
             </div>
           </header>
           <div class="material-frame-wrap">
@@ -226,16 +225,27 @@
         <div><span class="dialog-kicker">让 AI 老师读懂你的材料</span><h2>选择学习内容</h2></div>
         <button class="dialog-close" id="materialClose" aria-label="关闭" type="button">×</button>
       </header>
-      <p class="dialog-intro">生成的课件和上传文件保存在本机用户目录。AI老师会读取正文，并结合右侧内容回答问题。</p>
+      <p class="dialog-intro">可以选择系统提供的教程，也可以生成、打开或上传自己的学习材料。AI老师会读取当前正文并结合内容回答问题。</p>
 
       <nav class="material-mode-tabs" aria-label="学习材料来源">
-        <button type="button" class="active" data-material-mode="generate"><span>✦</span> AI 生成课件</button>
+        <button type="button" class="active" data-material-mode="system"><span>▤</span> 系统教程</button>
+        <button type="button" data-material-mode="generate"><span>✦</span> AI 生成课件</button>
         <button type="button" data-material-mode="url"><span>↗</span> 打开网页</button>
         <button type="button" data-material-mode="upload"><span>↑</span> 上传文件</button>
         <button type="button" data-material-mode="saved"><span>▣</span> 已保存</button>
       </nav>
 
-      <form class="material-form" id="generateMaterialForm" data-material-panel="generate">
+      <section class="saved-materials" id="builtinMaterialsPanel" data-material-panel="system">
+        <header class="saved-materials-header">
+          <div><strong>系统内置教程</strong><small>开箱即用，并会持续增加新的课程</small></div>
+          <button type="button" id="refreshBuiltinMaterials">刷新</button>
+        </header>
+        <div class="saved-material-list" id="builtinMaterialList" aria-live="polite">
+          <p class="saved-material-empty">正在读取系统教程…</p>
+        </div>
+      </section>
+
+      <form class="material-form" id="generateMaterialForm" data-material-panel="generate" hidden>
         <label for="materialRequirement">想学习什么？</label>
         <textarea id="materialRequirement" rows="6" maxlength="6000" required placeholder="例如：用适合小学五年级学生的方式讲清楚分数加法，要有生活例子、分步练习和答案提示。"></textarea>
         <p>AI 将生成一个独立 HTML 教学网页，并存储到本机。</p>

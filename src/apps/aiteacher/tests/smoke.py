@@ -61,6 +61,51 @@ class AITeacherSmokeTest(unittest.TestCase):
         self.assertIn(b'id="registerForm"', page.data)
         self.assertIn(b'id="accountInfoDialog"', page.data)
 
+    def test_builtin_tutorial_is_a_selectable_html_material(self):
+        listing = self.client.get('/aiteacher/api/builtin-materials')
+        self.assertEqual(listing.status_code, 200)
+        materials_list = listing.get_json()['materials']
+        self.assertEqual(materials_list[0]['id'], 'functional-communication-starter')
+        self.assertEqual(materials_list[0]['source_type'], 'builtin')
+        self.assertIn('选择喜欢的东西', materials_list[0]['text'])
+
+        detail = self.client.get(
+            '/aiteacher/api/builtin-materials/functional-communication-starter')
+        self.assertEqual(detail.status_code, 200)
+        viewer_url = detail.get_json()['material']['viewer_url']
+        viewer = self.client.get(viewer_url)
+        try:
+            self.assertEqual(viewer.status_code, 200)
+            self.assertIn('把想法说出来'.encode(), viewer.data)
+            self.assertIn(b'aiteacher-learning-action', viewer.data)
+        finally:
+            viewer.close()
+
+        page = self.client.get('/aiteacher/')
+        self.assertIn(b'data-material-mode="system"', page.data)
+        self.assertIn(b'id="builtinMaterialList"', page.data)
+
+    def test_chat_reads_builtin_tutorial_from_server(self):
+        fake_client = MagicMock()
+        fake_client.model = 'test-model'
+        fake_client._call_api_stream_yield.return_value = iter([
+            ('content', '你可以先从选择泡泡开始。'),
+        ])
+        with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
+            chat = self.client.post('/aiteacher/api/chat', json={
+                'message': '第一站练习什么？',
+                'page_context': {
+                    'builtin_id': 'functional-communication-starter',
+                    'visible_text': '前端伪造内容',
+                },
+            })
+        self.assertEqual(chat.status_code, 200)
+        self.assertIn('你可以先从选择泡泡开始'.encode(), chat.data)
+        payload = fake_client._call_api_stream_yield.call_args.args[0]
+        context_message = payload['messages'][-1]['content']
+        self.assertIn('点一个你喜欢的', context_message)
+        self.assertNotIn('前端伪造内容', context_message)
+
     def test_login_session_check_and_logout(self):
         verified_user = {
             'id': 'u-100', 'username': 'test-learner', 'email': 'learner@example.com',

@@ -222,7 +222,9 @@
   function pageContext() {
     if (state.materialMode && state.material) {
       return {
-        material_id: state.material.id,
+        ...(state.material.source_type === 'builtin'
+          ? { builtin_id: state.material.id }
+          : { material_id: state.material.id }),
         material_type: state.material.source_type,
         material_source: state.material.source_label,
         course_title: state.material.title,
@@ -426,12 +428,14 @@
   }
 
   const materialTypeNames = {
+    builtin: '系统教程',
     generated: 'AI 生成课件',
     url: '网页材料',
     upload: '上传材料',
   };
 
   const materialTypeShortNames = {
+    builtin: '系统',
     generated: 'AI',
     url: '网页',
     upload: '文件',
@@ -445,10 +449,11 @@
       panel.hidden = panel.dataset.materialPanel !== mode;
     });
     $('#materialFormError').hidden = true;
+    if (mode === 'system') loadBuiltinMaterials();
     if (mode === 'saved') loadSavedMaterials();
   }
 
-  function openMaterialDialog(mode = 'generate') {
+  function openMaterialDialog(mode = 'system') {
     setMaterialMode(mode);
     if (!$('#materialDialog').open) $('#materialDialog').showModal();
   }
@@ -468,6 +473,66 @@
       throw new Error(result.error || '学习材料处理失败');
     }
     return result;
+  }
+
+  function renderBuiltinMaterials(materials) {
+    const list = $('#builtinMaterialList');
+    list.innerHTML = '';
+    if (!materials.length) {
+      list.innerHTML = '<p class="saved-material-empty">暂时没有可用的系统教程。</p>';
+      return;
+    }
+    materials.forEach(material => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'saved-material-item';
+      button.dataset.builtinId = material.id;
+      const kind = document.createElement('span');
+      kind.className = 'saved-material-kind';
+      kind.textContent = '系统';
+      const copy = document.createElement('span');
+      copy.className = 'saved-material-copy';
+      const title = document.createElement('strong');
+      title.textContent = material.title;
+      const meta = document.createElement('small');
+      meta.textContent = `${material.subtitle || '系统教程'}${material.duration ? ` · ${material.duration}` : ''} · ${material.description || ''}`;
+      const action = document.createElement('span');
+      action.className = 'saved-material-open';
+      action.textContent = '开始学习 →';
+      copy.append(title, meta);
+      button.append(kind, copy, action);
+      list.appendChild(button);
+    });
+  }
+
+  async function loadBuiltinMaterials() {
+    const list = $('#builtinMaterialList');
+    list.innerHTML = '<p class="saved-material-empty">正在读取系统教程…</p>';
+    try {
+      const response = await fetch('/aiteacher/api/builtin-materials');
+      const result = await responseJson(response);
+      renderBuiltinMaterials(result.materials || []);
+    } catch (error) {
+      list.innerHTML = '';
+      const empty = document.createElement('p');
+      empty.className = 'saved-material-empty';
+      empty.textContent = error.message;
+      list.appendChild(empty);
+    }
+  }
+
+  async function openBuiltinMaterial(materialId, options = {}) {
+    try {
+      const response = await fetch(`/aiteacher/api/builtin-materials/${encodeURIComponent(materialId)}`);
+      const result = await responseJson(response);
+      if ($('#materialDialog').open) $('#materialDialog').close();
+      showMaterial(result.material, options);
+      if (!options.silent) showToast('已打开系统教程');
+    } catch (error) {
+      $('#materialFormError').textContent = error.message;
+      $('#materialFormError').hidden = false;
+      if (options.silent) showToast('系统教程暂时无法打开');
+    }
   }
 
   function renderSavedMaterials(materials) {
@@ -534,7 +599,7 @@
     }
   }
 
-  function showMaterial(material) {
+  function showMaterial(material, options = {}) {
     state.material = material;
     state.materialMode = true;
     $('#lessonTabs').hidden = true;
@@ -543,7 +608,7 @@
     $('.course-progress-wrap').hidden = true;
     $('#materialViewer').hidden = false;
     $('#courseSourceLabel').textContent = materialTypeNames[material.source_type] || '学习材料';
-    $('#courseMetaLabel').textContent = 'AI老师已读取';
+    $('#courseMetaLabel').textContent = material.duration || 'AI老师已读取';
     $('#courseTitle').textContent = material.title;
     $('#headerLesson').textContent = material.title;
     $('#materialTypeBadge').textContent = materialTypeNames[material.source_type] || '学习材料';
@@ -552,24 +617,14 @@
     $('#materialFrame').src = `${material.viewer_url}?v=${Date.now()}`;
     state.lastAction = `打开了学习材料“${material.title}”`;
     pulseContext();
-    addMessage('assistant', `我已经读过“${material.title}”。你可以直接问我问题，也可以让我从头讲起。`);
-    speak(`学习材料已经打开。你可以问我问题。`);
+    if (!options.silent) {
+      addMessage('assistant', `我已经读过“${material.title}”。你可以直接问我问题，也可以让我从头讲起。`);
+      speak(`学习材料已经打开。你可以问我问题。`);
+    }
   }
 
-  function showDemoCourse() {
-    state.materialMode = false;
-    state.material = null;
-    $('#materialViewer').hidden = true;
-    $('#materialFrame').src = 'about:blank';
-    $('#lessonTabs').hidden = false;
-    $('#lessonStage').hidden = false;
-    $('.lesson-footer').hidden = false;
-    $('.course-progress-wrap').hidden = false;
-    $('#courseSourceLabel').textContent = '体验课程';
-    $('#courseMetaLabel').textContent = '约 8 分钟';
-    $('#courseTitle').textContent = course.title;
-    renderLesson();
-    showToast('已返回体验课程');
+  function openDefaultBuiltin() {
+    return openBuiltinMaterial('functional-communication-starter', { silent: true });
   }
 
   async function submitGeneratedMaterial(event) {
@@ -883,9 +938,8 @@
       if (!$('#accountControl').contains(event.target)) closeAccountMenu();
     });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAccountMenu(); });
-    $('#materialOpen').addEventListener('click', () => openMaterialDialog('generate'));
-    $('#replaceMaterial').addEventListener('click', () => openMaterialDialog('generate'));
-    $('#returnDemoCourse').addEventListener('click', showDemoCourse);
+    $('#materialOpen').addEventListener('click', () => openMaterialDialog('system'));
+    $('#replaceMaterial').addEventListener('click', () => openMaterialDialog('system'));
     $('#materialClose').addEventListener('click', () => $('#materialDialog').close());
     $$('.material-mode-tabs [data-material-mode]').forEach(button => {
       button.addEventListener('click', () => setMaterialMode(button.dataset.materialMode));
@@ -898,11 +952,35 @@
       $('#uploadFileLabel').textContent = file ? file.name : '选择 HTML、Markdown 或 TXT 文件';
     });
     $('#refreshSavedMaterials').addEventListener('click', loadSavedMaterials);
+    $('#refreshBuiltinMaterials').addEventListener('click', loadBuiltinMaterials);
+    $('#builtinMaterialList').addEventListener('click', event => {
+      const item = event.target.closest('[data-builtin-id]');
+      if (item) openBuiltinMaterial(item.dataset.builtinId);
+    });
     $('#savedMaterialList').addEventListener('click', event => {
       const item = event.target.closest('[data-material-id]');
       if (item) openSavedMaterial(item.dataset.materialId);
     });
     $('#materialFrame').addEventListener('load', () => { $('#materialFrameLoading').hidden = true; });
+    window.addEventListener('message', event => {
+      if (event.source !== $('#materialFrame').contentWindow || !state.material) return;
+      const payload = event.data || {};
+      if (payload.type !== 'aiteacher-learning-action') return;
+      const action = String(payload.action || '').slice(0, 300);
+      const spoken = String(payload.spoken || '').slice(0, 300);
+      if (action) {
+        state.lastAction = action;
+        pulseContext();
+      }
+      if (spoken) {
+        speak(spoken, true);
+        if (payload.respond) {
+          state.attempts += 1;
+          addMessage('user', spoken, { learningAction: true });
+          requestTeacherResponse(spoken, { alreadyRendered: true });
+        }
+      }
+    });
   }
 
   function renderLessonPhraseOnly(wasCleared = false) {
@@ -924,4 +1002,5 @@
   bindEvents();
   renderLesson();
   refreshAccount();
+  openDefaultBuiltin();
 })();

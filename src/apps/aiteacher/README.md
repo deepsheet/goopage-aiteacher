@@ -6,6 +6,9 @@ A教师是 goodpage 的独立子产品。页面由左侧 AI 对话区与右侧�
 
 - `GET /aiteacher/`：课堂页面
 - `GET /aiteacher/api/course`：当前体验课结构
+- `GET /aiteacher/api/builtin-materials`：系统内置教程列表
+- `GET /aiteacher/api/builtin-materials/<id>`：内置教程详情
+- `GET /aiteacher/builtins/<id>`：隔离预览内置 HTML 教程
 - `POST /aiteacher/api/material/generate`：根据学习需求生成 HTML 课件
 - `POST /aiteacher/api/material/url`：读取公网或本机网页并保存快照
 - `POST /aiteacher/api/material/upload`：上传 HTML、Markdown、TXT 材料
@@ -15,7 +18,9 @@ A教师是 goodpage 的独立子产品。页面由左侧 AI 对话区与右侧�
 
 ## 目录
 
-- `course.py`：课程内容和教师系统规则
+- `course.py`：教师系统规则和旧版课程结构兼容数据
+- `builtin_materials.py`：内置教程目录与正文读取
+- `builtin_materials/`：可独立打开的系统 HTML 教程
 - `materials.py`：材料生成、URL 抓取、文本提取、本地存储和安全校验
 - `routes.py`：页面、对话和语音接口
 - `voice.py`：服务端 ASR 客户端
@@ -25,7 +30,7 @@ A教师是 goodpage 的独立子产品。页面由左侧 AI 对话区与右侧�
 
 ## 首个体验课
 
-“把想法说出来”以功能性沟通为目标，包含选择、请求、拒绝/求助和轮流四站。设计默认接受口语、发声、手势、点选和图片沟通，不强迫对视或复述，也不把产品描述为自闭症治疗或治愈工具。
+“把想法说出来”现在是一个独立、可选择的 HTML 教程，包含选择、请求、拒绝/求助和轮流四站。设计默认接受口语、发声、手势、点选和图片沟通，不强迫对视或复述，也不把产品描述为自闭症治疗或治愈工具。系统教程与用户生成、网址导入、文件上传及已保存材料共用同一套选择和阅读界面。
 
 学习进度和偏好仅在当前浏览器的 `localStorage` 中持久化；偏好会在对话时作为课堂上下文发送给服务端和模型，但服务端不另行保存。聊天历史目前仅保留在页面内存中，刷新后不会恢复。后续接入账号课程库时，可以保持 `page_context` 协议不变，将课程来源替换为数据库或外部接口。
 
