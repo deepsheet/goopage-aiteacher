@@ -35,6 +35,7 @@
 !/restart*.sh
 !/stop.sh
 !/git-commit-push.sh
+!/update-git.sh
 
 # Nginx 配置（如果需要）
 !nginx*.conf
