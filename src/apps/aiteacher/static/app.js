@@ -16,6 +16,8 @@
     busy: false,
     autoVoice: true,
     quiet: false,
+    materialMode: false,
+    material: null,
     preferences: { name: '', modes: [], interests: '', speechRate: 0.86 },
     messages: [{ role: 'assistant', content: initialGreeting }],
   };
@@ -80,6 +82,10 @@
   }
 
   function currentLesson() { return course.lessons[state.lessonIndex]; }
+
+  function activeContextTitle() {
+    return state.materialMode && state.material ? state.material.title : currentLesson().title;
+  }
 
   function updateProgress() {
     const total = course.lessons.length;
@@ -163,11 +169,11 @@
 
   function pulseContext() {
     $('#contextStatus').textContent = '刚刚读到学习区的新变化';
-    $('#contextRibbon').textContent = state.lastAction || `正在关注“${currentLesson().title}”`;
+    $('#contextRibbon').textContent = state.lastAction || `正在关注“${activeContextTitle()}”`;
     window.clearTimeout(pulseContext.timer);
     pulseContext.timer = window.setTimeout(() => {
       $('#contextStatus').textContent = '已读懂右侧的学习内容';
-      $('#contextRibbon').textContent = `正在关注“${currentLesson().title}”`;
+      $('#contextRibbon').textContent = `正在关注“${activeContextTitle()}”`;
     }, 3600);
   }
 
@@ -213,6 +219,19 @@
   }
 
   function pageContext() {
+    if (state.materialMode && state.material) {
+      return {
+        material_id: state.material.id,
+        material_type: state.material.source_type,
+        material_source: state.material.source_label,
+        course_title: state.material.title,
+        lesson_title: '自选学习材料',
+        goal: '理解材料、回答问题并通过对话巩固学习',
+        visible_text: String(state.material.text || '').slice(0, 12000),
+        last_action: state.lastAction,
+        preferences: state.preferences,
+      };
+    }
     const lesson = currentLesson();
     return {
       course_title: course.title,
@@ -405,6 +424,155 @@
     showToast('学习偏好已保存');
   }
 
+  const materialTypeNames = {
+    generated: 'AI 生成课件',
+    url: '网页材料',
+    upload: '上传材料',
+  };
+
+  function setMaterialMode(mode) {
+    $$('.material-mode-tabs [data-material-mode]').forEach(button => {
+      button.classList.toggle('active', button.dataset.materialMode === mode);
+    });
+    $$('[data-material-panel]').forEach(panel => {
+      panel.hidden = panel.dataset.materialPanel !== mode;
+    });
+    $('#materialFormError').hidden = true;
+  }
+
+  function openMaterialDialog(mode = 'generate') {
+    setMaterialMode(mode);
+    if (!$('#materialDialog').open) $('#materialDialog').showModal();
+  }
+
+  function setMaterialFormBusy(form, busy, waitingText) {
+    const button = $('.material-submit', form);
+    const label = $('span', button);
+    if (!button.dataset.defaultLabel) button.dataset.defaultLabel = label.textContent;
+    button.disabled = busy;
+    label.textContent = busy ? waitingText : button.dataset.defaultLabel;
+  }
+
+  async function responseJson(response) {
+    let result = {};
+    try { result = await response.json(); } catch (_) { /* handled below */ }
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || '学习材料处理失败');
+    }
+    return result;
+  }
+
+  function showMaterial(material) {
+    state.material = material;
+    state.materialMode = true;
+    $('#lessonTabs').hidden = true;
+    $('#lessonStage').hidden = true;
+    $('.lesson-footer').hidden = true;
+    $('.course-progress-wrap').hidden = true;
+    $('#materialViewer').hidden = false;
+    $('#courseSourceLabel').textContent = materialTypeNames[material.source_type] || '学习材料';
+    $('#courseMetaLabel').textContent = 'AI老师已读取';
+    $('#courseTitle').textContent = material.title;
+    $('#headerLesson').textContent = material.title;
+    $('#materialTypeBadge').textContent = materialTypeNames[material.source_type] || '学习材料';
+    $('#materialSourceText').textContent = material.source_label || '正文已准备好，可以开始提问';
+    $('#materialFrameLoading').hidden = false;
+    $('#materialFrame').src = `${material.viewer_url}?v=${Date.now()}`;
+    state.lastAction = `打开了学习材料“${material.title}”`;
+    pulseContext();
+    addMessage('assistant', `我已经读过“${material.title}”。你可以直接问我问题，也可以让我从头讲起。`);
+    speak(`学习材料已经打开。你可以问我问题。`);
+  }
+
+  function showDemoCourse() {
+    state.materialMode = false;
+    state.material = null;
+    $('#materialViewer').hidden = true;
+    $('#materialFrame').src = 'about:blank';
+    $('#lessonTabs').hidden = false;
+    $('#lessonStage').hidden = false;
+    $('.lesson-footer').hidden = false;
+    $('.course-progress-wrap').hidden = false;
+    $('#courseSourceLabel').textContent = '体验课程';
+    $('#courseMetaLabel').textContent = '约 8 分钟';
+    $('#courseTitle').textContent = course.title;
+    renderLesson();
+    showToast('已返回体验课程');
+  }
+
+  async function submitGeneratedMaterial(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const requirement = $('#materialRequirement').value.trim();
+    if (!requirement) return;
+    setMaterialFormBusy(form, true, 'AI 正在设计课件…');
+    $('#materialFormError').hidden = true;
+    try {
+      const response = await fetch('/aiteacher/api/material/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirement }),
+      });
+      const result = await responseJson(response);
+      $('#materialDialog').close();
+      showMaterial(result.material);
+      showToast('教学网页已生成并保存');
+    } catch (error) {
+      $('#materialFormError').textContent = error.message;
+      $('#materialFormError').hidden = false;
+    } finally {
+      setMaterialFormBusy(form, false, '');
+    }
+  }
+
+  async function submitUrlMaterial(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const url = $('#materialUrl').value.trim();
+    if (!url) return;
+    setMaterialFormBusy(form, true, '正在读取网页…');
+    $('#materialFormError').hidden = true;
+    try {
+      const response = await fetch('/aiteacher/api/material/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const result = await responseJson(response);
+      $('#materialDialog').close();
+      showMaterial(result.material);
+      showToast('网页已读取并保存为学习材料');
+    } catch (error) {
+      $('#materialFormError').textContent = error.message;
+      $('#materialFormError').hidden = false;
+    } finally {
+      setMaterialFormBusy(form, false, '');
+    }
+  }
+
+  async function submitUploadedMaterial(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const file = $('#materialFile').files[0];
+    if (!file) return;
+    const body = new FormData();
+    body.append('file', file);
+    setMaterialFormBusy(form, true, '正在上传并读取…');
+    $('#materialFormError').hidden = true;
+    try {
+      const response = await fetch('/aiteacher/api/material/upload', { method: 'POST', body });
+      const result = await responseJson(response);
+      $('#materialDialog').close();
+      showMaterial(result.material);
+      showToast('文件已保存为学习材料');
+    } catch (error) {
+      $('#materialFormError').textContent = error.message;
+      $('#materialFormError').hidden = false;
+    } finally {
+      setMaterialFormBusy(form, false, '');
+    }
+  }
+
   function bindEvents() {
     $('#sendButton').addEventListener('click', sendComposerMessage);
     $('#messageInput').addEventListener('keydown', event => {
@@ -449,7 +617,21 @@
     $('#stopRecording').addEventListener('click', stopRecording);
     $('#profileOpen').addEventListener('click', openProfile);
     $('#profileForm').addEventListener('submit', saveProfile);
-    $('.back-button').addEventListener('click', () => showToast('更多课程正在准备中'));
+    $('#materialOpen').addEventListener('click', () => openMaterialDialog('generate'));
+    $('#replaceMaterial').addEventListener('click', () => openMaterialDialog('generate'));
+    $('#returnDemoCourse').addEventListener('click', showDemoCourse);
+    $('#materialClose').addEventListener('click', () => $('#materialDialog').close());
+    $$('.material-mode-tabs [data-material-mode]').forEach(button => {
+      button.addEventListener('click', () => setMaterialMode(button.dataset.materialMode));
+    });
+    $('#generateMaterialForm').addEventListener('submit', submitGeneratedMaterial);
+    $('#urlMaterialForm').addEventListener('submit', submitUrlMaterial);
+    $('#uploadMaterialForm').addEventListener('submit', submitUploadedMaterial);
+    $('#materialFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      $('#uploadFileLabel').textContent = file ? file.name : '选择 HTML、Markdown 或 TXT 文件';
+    });
+    $('#materialFrame').addEventListener('load', () => { $('#materialFrameLoading').hidden = true; });
   }
 
   function renderLessonPhraseOnly(wasCleared = false) {

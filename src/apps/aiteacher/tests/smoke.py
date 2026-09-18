@@ -1,21 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import io
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from flask import Flask
 
 from src.apps.aiteacher import aiteacher_bp
+from src.apps.aiteacher import materials
 from src.apps.aiteacher.routes import MAX_HISTORY_ITEMS, _chat_messages
 from src.web_server import app as web_app
 
 
 class AITeacherSmokeTest(unittest.TestCase):
     def setUp(self):
-        app = Flask(__name__)
-        app.config.update(TESTING=True, SECRET_KEY='test')
-        app.register_blueprint(aiteacher_bp, url_prefix='/aiteacher')
-        self.client = app.test_client()
+        self.app = Flask(__name__)
+        self.app.config.update(TESTING=True, SECRET_KEY='test')
+        self.app.register_blueprint(aiteacher_bp, url_prefix='/aiteacher')
+        self.client = self.app.test_client()
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.data_root_patch = patch.object(
+            materials, 'DATA_ROOT', Path(self.temp_dir.name))
+        self.data_root_patch.start()
+
+    def tearDown(self):
+        self.data_root_patch.stop()
+        self.temp_dir.cleanup()
 
     def test_page_and_assets_are_available(self):
         for path in (
@@ -60,6 +73,110 @@ class AITeacherSmokeTest(unittest.TestCase):
         self.assertEqual(message, '泡泡')
         self.assertEqual(len(messages), MAX_HISTORY_ITEMS + 2)
         self.assertIn('选择了泡泡', messages[-1]['content'])
+
+    def test_markdown_upload_is_saved_previewed_and_read_by_chat(self):
+        upload = self.client.post(
+            '/aiteacher/api/material/upload',
+            data={'file': (io.BytesIO('# 光合作用\n植物把光能变成化学能。'.encode()), '课程.md')},
+            content_type='multipart/form-data',
+        )
+        self.assertEqual(upload.status_code, 200)
+        material = upload.get_json()['material']
+        self.assertEqual(material['source_type'], 'upload')
+        self.assertIn('植物把光能', material['text'])
+
+        preview = self.client.get(material['viewer_url'])
+        try:
+            self.assertEqual(preview.status_code, 200)
+            self.assertIn('sandbox allow-scripts', preview.headers['Content-Security-Policy'])
+            self.assertIn('光合作用'.encode(), preview.data)
+        finally:
+            preview.close()
+
+        fake_client = MagicMock()
+        fake_client.model = 'test-model'
+        fake_client._call_api_stream_yield.return_value = iter([
+            ('content', '植物会利用光能。'),
+        ])
+        with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
+            chat = self.client.post('/aiteacher/api/chat', json={
+                'message': '这份材料讲了什么？',
+                'page_context': {
+                    'material_id': material['id'],
+                    'visible_text': '前端伪造的内容',
+                },
+            })
+            self.assertEqual(chat.status_code, 200)
+            self.assertIn('植物会利用光能'.encode(), chat.data)
+        payload = fake_client._call_api_stream_yield.call_args.args[0]
+        context_message = payload['messages'][-1]['content']
+        self.assertIn('植物把光能变成化学能', context_message)
+        self.assertNotIn('前端伪造的内容', context_message)
+
+    def test_url_material_is_snapshotted(self):
+        remote_html = '''<!doctype html><html><head><title>Python 入门</title></head>
+        <body><h1>变量</h1><p>变量用于保存数据。</p></body></html>'''.encode()
+        with patch.object(materials, '_download_url', return_value=(
+            'https://example.com/python', remote_html,
+            'text/html; charset=utf-8', 'utf-8')):
+            response = self.client.post('/aiteacher/api/material/url', json={
+                'url': 'https://example.com/python',
+            })
+        self.assertEqual(response.status_code, 200)
+        material = response.get_json()['material']
+        self.assertEqual(material['title'], 'Python 入门')
+        self.assertIn('变量用于保存数据', material['text'])
+        preview = self.client.get(material['viewer_url'])
+        try:
+            self.assertEqual(preview.status_code, 200)
+        finally:
+            preview.close()
+
+    def test_ai_generated_material_is_stored_as_html(self):
+        generated_html = '''<!doctype html><html><head><title>分数加法课</title></head>
+        <body><h1>分数加法</h1><p>先把分母变成一样。</p></body></html>'''
+        fake_client = MagicMock()
+        fake_client.generate.return_value = generated_html
+        with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
+            response = self.client.post('/aiteacher/api/material/generate', json={
+                'requirement': '教我学习分数加法',
+            })
+        self.assertEqual(response.status_code, 200)
+        material = response.get_json()['material']
+        self.assertEqual(material['source_type'], 'generated')
+        self.assertEqual(material['title'], '分数加法课')
+        self.assertIn('先把分母变成一样', material['text'])
+        saved = list(Path(self.temp_dir.name).rglob('*.html'))
+        self.assertEqual(len(saved), 1)
+
+    def test_logged_in_material_is_saved_under_username(self):
+        with self.client.session_transaction() as user_session:
+            user_session['is_logged_in'] = True
+            user_session['username'] = 'muusername'
+        response = self.client.post(
+            '/aiteacher/api/material/upload',
+            data={'file': (io.BytesIO('学习正文'.encode()), 'notes.txt')},
+            content_type='multipart/form-data',
+        )
+        self.assertEqual(response.status_code, 200)
+        user_folder = Path(self.temp_dir.name) / 'muusername'
+        self.assertTrue(user_folder.is_dir())
+        self.assertEqual(len(list(user_folder.glob('*.html'))), 1)
+
+    def test_url_validation_allows_localhost_but_blocks_link_local(self):
+        with patch('src.apps.aiteacher.materials.socket.getaddrinfo', return_value=[
+            (2, 1, 6, '', ('127.0.0.1', 5058)),
+            (10, 1, 6, '', ('::1', 5058, 0, 0)),
+        ]):
+            self.assertEqual(
+                materials._validate_fetch_url('http://localhost:5058/lesson'),
+                'http://localhost:5058/lesson',
+            )
+        with patch('src.apps.aiteacher.materials.socket.getaddrinfo', return_value=[
+            (2, 1, 6, '', ('169.254.169.254', 80)),
+        ]):
+            with self.assertRaises(materials.MaterialError):
+                materials._validate_fetch_url('http://169.254.169.254/latest')
 
 
 class WebServerSmokeTest(unittest.TestCase):

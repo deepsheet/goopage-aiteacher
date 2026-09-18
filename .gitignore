@@ -123,6 +123,7 @@ check*.sh
 # User data
 userdata/
 userfiles/
+/data/
 
 # Examples and demos
 examples/

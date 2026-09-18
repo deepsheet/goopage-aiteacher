@@ -102,11 +102,12 @@
       <section class="learning-panel" id="learningPanel" aria-labelledby="courseTitle">
         <header class="course-header">
           <div class="course-title-wrap">
-            <button class="back-button" type="button" aria-label="返回课程列表" title="更多课程即将上线">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            <button class="source-button" id="materialOpen" type="button" aria-label="选择学习材料" title="生成、打开或上传学习材料">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              <span>学习材料</span>
             </button>
             <div>
-              <div class="course-kicker"><span>体验课程</span><span class="dot-separator">·</span><span>约 8 分钟</span></div>
+              <div class="course-kicker"><span id="courseSourceLabel">体验课程</span><span class="dot-separator">·</span><span id="courseMetaLabel">约 8 分钟</span></div>
               <h2 id="courseTitle">{{ course.title }}</h2>
             </div>
           </div>
@@ -179,9 +180,70 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </footer>
+
+        <section class="material-viewer" id="materialViewer" hidden aria-label="自选学习材料">
+          <header class="material-viewer-bar">
+            <div class="material-source-summary">
+              <span class="material-type-badge" id="materialTypeBadge">学习材料</span>
+              <span id="materialSourceText">AI老师已读取材料正文</span>
+            </div>
+            <div class="material-viewer-actions">
+              <button type="button" id="returnDemoCourse">返回体验课</button>
+              <button type="button" class="primary" id="replaceMaterial">更换材料</button>
+            </div>
+          </header>
+          <div class="material-frame-wrap">
+            <div class="material-loading" id="materialFrameLoading">
+              <span></span><strong>正在打开学习材料…</strong>
+            </div>
+            <iframe id="materialFrame" title="学习材料预览" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer"></iframe>
+          </div>
+        </section>
       </section>
     </main>
   </div>
+
+  <dialog class="material-dialog" id="materialDialog">
+    <div class="material-dialog-body">
+      <header>
+        <div><span class="dialog-kicker">让 AI 老师读懂你的材料</span><h2>选择学习内容</h2></div>
+        <button class="dialog-close" id="materialClose" aria-label="关闭" type="button">×</button>
+      </header>
+      <p class="dialog-intro">生成的课件和上传文件保存在本机用户目录。AI老师会读取正文，并结合右侧内容回答问题。</p>
+
+      <nav class="material-mode-tabs" aria-label="学习材料来源">
+        <button type="button" class="active" data-material-mode="generate"><span>✦</span> AI 生成课件</button>
+        <button type="button" data-material-mode="url"><span>↗</span> 打开网页</button>
+        <button type="button" data-material-mode="upload"><span>↑</span> 上传文件</button>
+      </nav>
+
+      <form class="material-form" id="generateMaterialForm" data-material-panel="generate">
+        <label for="materialRequirement">想学习什么？</label>
+        <textarea id="materialRequirement" rows="6" maxlength="6000" required placeholder="例如：用适合小学五年级学生的方式讲清楚分数加法，要有生活例子、分步练习和答案提示。"></textarea>
+        <p>AI 将生成一个独立 HTML 教学网页，并存储到本机。</p>
+        <button class="material-submit" type="submit"><span>生成并开始学习</span></button>
+      </form>
+
+      <form class="material-form" id="urlMaterialForm" data-material-panel="url" hidden>
+        <label for="materialUrl">网页地址</label>
+        <input id="materialUrl" type="url" required placeholder="https://example.com/lesson 或 http://localhost:8000/page.html">
+        <p>支持可访问的公网网页和本机 HTTP/HTTPS 地址。网页会保存为本地快照，供 AI 老师读取。</p>
+        <button class="material-submit" type="submit"><span>读取并打开网页</span></button>
+      </form>
+
+      <form class="material-form" id="uploadMaterialForm" data-material-panel="upload" hidden>
+        <label class="upload-drop" for="materialFile">
+          <span class="upload-icon">↑</span>
+          <strong id="uploadFileLabel">选择 HTML、Markdown 或 TXT 文件</strong>
+          <small>单个文件最大 5MB</small>
+        </label>
+        <input id="materialFile" type="file" accept=".html,.htm,.md,.markdown,.txt,text/html,text/markdown,text/plain" required>
+        <p>文件将存入当前用户的本机目录，并转换为可在右侧阅读的页面。</p>
+        <button class="material-submit" type="submit"><span>上传并开始学习</span></button>
+      </form>
+      <div class="material-form-error" id="materialFormError" role="alert" hidden></div>
+    </div>
+  </dialog>
 
   <dialog class="profile-dialog" id="profileDialog">
     <form method="dialog" id="profileForm">

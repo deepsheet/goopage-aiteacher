@@ -7,6 +7,9 @@
 ## 功能
 
 - AI 对话会实时读取右侧学习区上下文
+- 输入学习目标，由 AI 生成并保存独立 HTML 教学网页
+- 导入公网或本机 HTTP/HTTPS 网页，并保存为可阅读的本地快照
+- 上传 HTML、Markdown、TXT 学习材料（单文件最大 5MB）
 - 支持 SSE 流式回复、浏览器语音播报和录音转文字
 - 四阶段互动体验课，接受口语、手势、点选和图片沟通
 - 安静模式、语速和表达偏好设置
@@ -54,6 +57,12 @@ DEEPSEEK_API_KEY = 'your-key'
 export SECRET_KEY='replace-with-a-long-random-value'
 ```
 
+学习材料默认保存在项目的 `data/users/<用户名>/` 下；未登录访客使用独立的 `guest-<会话编号>` 目录。可以用环境变量修改存储根目录：
+
+```bash
+export AITEACHER_DATA_ROOT='/path/to/data/users'
+```
+
 ## 项目结构
 
 ```text
@@ -68,6 +77,7 @@ export SECRET_KEY='replace-with-a-long-random-value'
 │   ├── services/                  # 文件存储与内容提取
 │   └── apps/aiteacher/
 │       ├── course.py              # 体验课内容与教学规则
+│       ├── materials.py           # 学习材料生成、抓取、提取与落盘
 │       ├── routes.py              # 页面、对话与 ASR 接口
 │       ├── voice.py               # 录音转文字客户端
 │       ├── static/                # 页面 CSS / JavaScript
@@ -83,6 +93,10 @@ export SECRET_KEY='replace-with-a-long-random-value'
 | `GET /health` | 无外部依赖的健康检查 |
 | `GET /aiteacher/` | AI Teacher 子应用入口 |
 | `GET /aiteacher/api/course` | 当前体验课数据 |
+| `POST /aiteacher/api/material/generate` | 根据需求生成 HTML 课件 |
+| `POST /aiteacher/api/material/url` | 导入公网或本机网页 |
+| `POST /aiteacher/api/material/upload` | 上传 HTML、MD 或 TXT 文件 |
+| `GET /aiteacher/materials/<id>` | 沙箱预览本地学习材料 |
 | `POST /aiteacher/api/chat` | SSE 流式 AI 对话 |
 | `POST /aiteacher/api/asr` | 浏览器录音转文字 |
 
