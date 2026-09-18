@@ -431,6 +431,12 @@
     upload: '上传材料',
   };
 
+  const materialTypeShortNames = {
+    generated: 'AI',
+    url: '网页',
+    upload: '文件',
+  };
+
   function setMaterialMode(mode) {
     $$('.material-mode-tabs [data-material-mode]').forEach(button => {
       button.classList.toggle('active', button.dataset.materialMode === mode);
@@ -439,6 +445,7 @@
       panel.hidden = panel.dataset.materialPanel !== mode;
     });
     $('#materialFormError').hidden = true;
+    if (mode === 'saved') loadSavedMaterials();
   }
 
   function openMaterialDialog(mode = 'generate') {
@@ -461,6 +468,70 @@
       throw new Error(result.error || '学习材料处理失败');
     }
     return result;
+  }
+
+  function renderSavedMaterials(materials) {
+    const list = $('#savedMaterialList');
+    list.innerHTML = '';
+    if (!materials.length) {
+      list.innerHTML = '<p class="saved-material-empty">还没有已保存的材料。生成、导入或上传后会出现在这里。</p>';
+      return;
+    }
+    materials.forEach(material => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'saved-material-item';
+      button.dataset.materialId = material.id;
+
+      const kind = document.createElement('span');
+      kind.className = 'saved-material-kind';
+      kind.textContent = materialTypeShortNames[material.source_type] || '材料';
+      const copy = document.createElement('span');
+      copy.className = 'saved-material-copy';
+      const title = document.createElement('strong');
+      title.textContent = material.title || '未命名学习材料';
+      const meta = document.createElement('small');
+      const created = material.created_at ? new Date(material.created_at).toLocaleString('zh-CN', { hour12: false }) : '';
+      meta.textContent = `${materialTypeNames[material.source_type] || '学习材料'}${created ? ` · ${created}` : ''}`;
+      const action = document.createElement('span');
+      action.className = 'saved-material-open';
+      action.textContent = '打开 →';
+      copy.append(title, meta);
+      button.append(kind, copy, action);
+      list.appendChild(button);
+    });
+  }
+
+  async function loadSavedMaterials() {
+    const list = $('#savedMaterialList');
+    list.innerHTML = '<p class="saved-material-empty">正在读取已保存材料…</p>';
+    try {
+      const response = await fetch('/aiteacher/api/materials');
+      const result = await responseJson(response);
+      const paths = result.storage_paths?.length ? result.storage_paths : [result.storage_path];
+      $('#materialStoragePath').textContent = `保存位置：${paths.filter(Boolean).join('；')}`;
+      renderSavedMaterials(result.materials || []);
+    } catch (error) {
+      list.innerHTML = '';
+      const empty = document.createElement('p');
+      empty.className = 'saved-material-empty';
+      empty.textContent = error.message;
+      list.appendChild(empty);
+    }
+  }
+
+  async function openSavedMaterial(materialId) {
+    if (!materialId) return;
+    try {
+      const response = await fetch(`/aiteacher/api/materials/${encodeURIComponent(materialId)}`);
+      const result = await responseJson(response);
+      $('#materialDialog').close();
+      showMaterial(result.material);
+      showToast('已打开保存的学习材料');
+    } catch (error) {
+      $('#materialFormError').textContent = error.message;
+      $('#materialFormError').hidden = false;
+    }
   }
 
   function showMaterial(material) {
@@ -825,6 +896,11 @@
     $('#materialFile').addEventListener('change', event => {
       const file = event.target.files[0];
       $('#uploadFileLabel').textContent = file ? file.name : '选择 HTML、Markdown 或 TXT 文件';
+    });
+    $('#refreshSavedMaterials').addEventListener('click', loadSavedMaterials);
+    $('#savedMaterialList').addEventListener('click', event => {
+      const item = event.target.closest('[data-material-id]');
+      if (item) openSavedMaterial(item.dataset.materialId);
     });
     $('#materialFrame').addEventListener('load', () => { $('#materialFrameLoading').hidden = true; });
   }

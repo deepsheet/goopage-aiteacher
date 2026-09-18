@@ -230,7 +230,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .material-dialog-body { padding: 25px; }
 .material-dialog header { display: flex; justify-content: space-between; align-items: flex-start; }
 .material-dialog h2 { margin: 4px 0 0; font-size: 24px; }
-.material-mode-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 20px 0 18px; padding: 5px; border-radius: 14px; background: #f1f3ef; }
+.material-mode-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin: 20px 0 18px; padding: 5px; border-radius: 14px; background: #f1f3ef; }
 .material-mode-tabs button { border: 0; border-radius: 10px; padding: 10px 8px; color: #737b73; background: transparent; cursor: pointer; font-size: 11px; font-weight: 700; }
 .material-mode-tabs button.active { color: var(--green-dark); background: #fff; box-shadow: 0 3px 12px rgba(49,67,54,.08); }
 .material-mode-tabs button span { margin-right: 4px; }
@@ -250,6 +250,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .upload-drop strong { font-size: 12px; }.upload-drop small { color: var(--muted); font-size: 10px; }
 .material-form-error { margin-top: 12px; padding: 10px 12px; border-radius: 10px; color: #974a35; background: #fff0eb; font-size: 11px; }
 .material-form-error[hidden] { display: none; }
+.saved-materials[hidden] { display: none; }
+.saved-materials { min-height: 210px; }
+.saved-materials-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 11px; }
+.saved-materials-header > div { min-width: 0; display: grid; gap: 3px; }.saved-materials-header strong { font-size: 12px; }
+.saved-materials-header small { color: var(--muted); font-size: 9px; overflow-wrap: anywhere; }
+.saved-materials-header button { border: 1px solid var(--line); border-radius: 9px; padding: 7px 10px; color: var(--green-dark); background: #fff; cursor: pointer; font-size: 10px; font-weight: 700; }
+.saved-material-list { max-height: 390px; overflow-y: auto; display: grid; gap: 8px; }
+.saved-material-item { width: 100%; border: 1px solid #dfe5dc; border-radius: 13px; padding: 12px; display: flex; align-items: center; gap: 11px; color: inherit; background: #fbfcf9; text-align: left; cursor: pointer; }
+.saved-material-item:hover { border-color: #9fc5ad; background: var(--green-soft); }
+.saved-material-kind { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: var(--green-dark); background: #e0eee5; font-size: 10px; font-weight: 800; }
+.saved-material-copy { min-width: 0; display: grid; gap: 3px; flex: 1; }.saved-material-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.saved-material-copy small { color: var(--muted); font-size: 9px; }.saved-material-open { flex: 0 0 auto; color: var(--green); font-size: 10px; font-weight: 800; }
+.saved-material-empty { margin: 30px 0; color: var(--muted); text-align: center; font-size: 11px; }
 
 .profile-dialog { width: min(520px, calc(100vw - 30px)); border: 0; border-radius: 24px; padding: 0; box-shadow: 0 30px 100px rgba(28,39,31,.25); }
 .profile-dialog::backdrop { background: rgba(25,34,27,.42); backdrop-filter: blur(5px); }
@@ -314,5 +327,5 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .course-title-wrap { gap: 8px; }.course-title-wrap h2 { font-size: 15px; }.source-button { width: 38px; padding: 0; justify-content: center; }.source-button span { display: none; }.lesson-tabs { padding-inline: 12px; }.lesson-tab { padding-inline: 8px; }
   .lesson-stage { padding: 12px; }.lesson-card, .activity-card { border-radius: 18px; }.activity-card { padding: 18px 14px; }.choice-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.choice-label { font-size: 12px; }
   .coach-note { align-items: flex-start; }.lesson-footer { padding-inline: 14px; }.next-button { padding-inline: 13px; gap: 8px; }.observation-icon { display: none; }
-  .material-dialog-body { padding: 19px; }.material-mode-tabs button { font-size: 10px; padding-inline: 4px; }.material-viewer-bar { align-items: flex-start; flex-direction: column; }.material-viewer-actions { width: 100%; }.material-viewer-actions button { flex: 1; }.material-frame-wrap { padding: 9px; }.material-loading { inset: 9px; }
+  .material-dialog-body { padding: 19px; }.material-mode-tabs { grid-template-columns: repeat(2, 1fr); }.material-mode-tabs button { font-size: 10px; padding-inline: 4px; }.material-viewer-bar { align-items: flex-start; flex-direction: column; }.material-viewer-actions { width: 100%; }.material-viewer-actions button { flex: 1; }.material-frame-wrap { padding: 9px; }.material-loading { inset: 9px; }
 }

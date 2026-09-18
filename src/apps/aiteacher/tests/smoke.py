@@ -183,6 +183,7 @@ class AITeacherSmokeTest(unittest.TestCase):
         generated_html = '''<!doctype html><html><head><title>分数加法课</title></head>
         <body><h1>分数加法</h1><p>先把分母变成一样。</p></body></html>'''
         fake_client = MagicMock()
+        fake_client.model_name = 'deepseek'
         fake_client.generate.return_value = generated_html
         with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
             response = self.client.post('/aiteacher/api/material/generate', json={
@@ -195,6 +196,75 @@ class AITeacherSmokeTest(unittest.TestCase):
         self.assertIn('先把分母变成一样', material['text'])
         saved = list(Path(self.temp_dir.name).rglob('*.html'))
         self.assertEqual(len(saved), 1)
+        self.assertEqual(fake_client.generate.call_args.kwargs['thinking'], 'disabled')
+
+    def test_ai_generation_discards_planning_text_before_html(self):
+        generated = '''我先规划课程结构，然后再开始写页面。
+        <!doctype html><html><head><title>勾股定理课</title></head>
+        <body><h1>勾股定理</h1><p>在直角三角形中，两条直角边平方和等于斜边平方。</p>
+        <section><h2>练习</h2><p>三、四、五是一组勾股数。</p></section></body></html>
+        页面已经完成。'''
+        fake_client = MagicMock()
+        fake_client.generate.return_value = generated
+        with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
+            response = self.client.post('/aiteacher/api/material/generate', json={
+                'requirement': '勾股定理学习',
+            })
+        self.assertEqual(response.status_code, 200)
+        saved_html = next(Path(self.temp_dir.name).rglob('*.html')).read_text()
+        self.assertTrue(saved_html.lower().startswith('<!doctype html>'))
+        self.assertNotIn('我先规划课程结构', saved_html)
+        self.assertNotIn('页面已经完成', saved_html)
+
+    def test_ai_generation_retries_when_first_response_has_no_html(self):
+        fake_client = MagicMock()
+        fake_client.generate.side_effect = [
+            '我准备先设计学习目标、例题和练习。',
+            '<!doctype html><html><head><title>重试成功</title></head><body>'
+            '<h1>勾股定理</h1><p>这是重试后生成的完整教学内容，包含目标、讲解、例题、练习和答案提示。</p>'
+            '</body></html>',
+        ]
+        with patch('src.apps.aiteacher.routes.LLMClient', return_value=fake_client):
+            response = self.client.post('/aiteacher/api/material/generate', json={
+                'requirement': '勾股定理学习',
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['material']['title'], '重试成功')
+        self.assertEqual(fake_client.generate.call_count, 2)
+
+    def test_saved_materials_can_be_listed_and_reopened(self):
+        upload = self.client.post(
+            '/aiteacher/api/material/upload',
+            data={'file': (io.BytesIO('重新打开这份材料'.encode()), 'saved.txt')},
+            content_type='multipart/form-data',
+        )
+        material_id = upload.get_json()['material']['id']
+        listing = self.client.get('/aiteacher/api/materials')
+        self.assertEqual(listing.status_code, 200)
+        listed_ids = [item['id'] for item in listing.get_json()['materials']]
+        self.assertIn(material_id, listed_ids)
+        self.assertIn('data/users/guest-', listing.get_json()['storage_path'])
+
+        reopened = self.client.get('/aiteacher/api/materials/' + material_id)
+        self.assertEqual(reopened.status_code, 200)
+        self.assertIn('重新打开这份材料', reopened.get_json()['material']['text'])
+
+    def test_login_does_not_hide_materials_created_in_guest_session(self):
+        with self.client.session_transaction() as user_session:
+            user_session['aiteacher_guest_id'] = 'before-login'
+        uploaded = self.client.post(
+            '/aiteacher/api/material/upload',
+            data={'file': (io.BytesIO('登录前保存的材料'.encode()), 'before-login.txt')},
+            content_type='multipart/form-data',
+        ).get_json()['material']
+        with self.client.session_transaction() as user_session:
+            user_session['is_logged_in'] = True
+            user_session['username'] = 'signed-in-user'
+        listing = self.client.get('/aiteacher/api/materials').get_json()
+        self.assertIn(uploaded['id'], [item['id'] for item in listing['materials']])
+        self.assertEqual(len(listing['storage_paths']), 2)
+        reopened = self.client.get('/aiteacher/api/materials/' + uploaded['id'])
+        self.assertEqual(reopened.status_code, 200)
 
     def test_logged_in_material_is_saved_under_username(self):
         with self.client.session_transaction() as user_session:

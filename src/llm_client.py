@@ -65,7 +65,8 @@ class LLMClient:
     # 通用对话接口
     # ============================================================
 
-    def generate(self, system_prompt, user_content, max_tokens=4096, temperature=0.7, stream=False):
+    def generate(self, system_prompt, user_content, max_tokens=4096, temperature=0.7,
+                 stream=False, thinking=None):
         """
         通用对话接口：传入系统提示词与用户内容，返回模型生成结果
 
@@ -74,6 +75,7 @@ class LLMClient:
         @param {int} max_tokens - 最大输出 token 数
         @param {float} temperature - 采样温度
         @param {bool} stream - 是否使用流式输出（适合长内容）
+        @param {str|None} thinking - 可选，DeepSeek 思考模式（enabled/disabled）
         @return {str} - 模型生成的文本内容
         """
         logger.info(f"开始调用 LLM，max_tokens={max_tokens}, stream={stream}")
@@ -87,6 +89,8 @@ class LLMClient:
             "temperature": temperature,
             "stream": stream
         }
+        if thinking in ('enabled', 'disabled'):
+            prompt['thinking'] = {'type': thinking}
         response = self._call_api(prompt)
         return self._parse_response(response)
 

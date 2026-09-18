@@ -16,7 +16,7 @@ from src.apps.aiteacher import aiteacher_bp
 from src.apps.aiteacher.course import DEMO_COURSE, SYSTEM_PROMPT
 from src.apps.aiteacher.materials import (
     MaterialError, create_generated_material, create_uploaded_material,
-    create_url_material, load_material, safe_owner_name,
+    create_url_material, list_materials, load_material, safe_owner_name,
 )
 from src.llm_client import LLMClient
 from src.logger import logger
@@ -78,6 +78,26 @@ def _current_material_owner():
     return 'guest-' + safe_owner_name(guest_id)
 
 
+def _current_material_owners():
+    """当前账号目录优先，同时保留本次会话登录前的访客材料。"""
+    owners = [_current_material_owner()]
+    guest_id = session.get('aiteacher_guest_id')
+    if guest_id:
+        guest_owner = 'guest-' + safe_owner_name(guest_id)
+        if guest_owner not in owners:
+            owners.append(guest_owner)
+    return owners
+
+
+def _load_current_material(material_id):
+    for owner in _current_material_owners():
+        try:
+            return load_material(owner, material_id)
+        except FileNotFoundError:
+            continue
+    raise FileNotFoundError('学习材料不存在')
+
+
 def _material_payload(material):
     return {
         'id': material['id'],
@@ -92,13 +112,24 @@ def _material_payload(material):
     }
 
 
+def _material_summary_payload(material):
+    return {
+        'id': material['id'],
+        'title': material['title'],
+        'source_type': material['source_type'],
+        'source_label': material.get('source_label', ''),
+        'original_name': material.get('original_name', ''),
+        'created_at': material.get('created_at', ''),
+    }
+
+
 def _hydrate_material_context(body):
     """用服务端已保存的正文覆盖前端材料上下文，避免丢失或篡改。"""
     page_context = body.get('page_context') or {}
     material_id = page_context.get('material_id')
     if not material_id:
         return body
-    metadata, _ = load_material(_current_material_owner(), material_id)
+    metadata, _ = _load_current_material(material_id)
     hydrated = dict(body)
     hydrated_context = dict(page_context)
     hydrated_context.update({
@@ -138,6 +169,34 @@ def generate_material():
         return jsonify({'success': False, 'error': 'AI 暂时无法生成课件，请稍后再试'}), 502
 
 
+@aiteacher_bp.route('/api/materials')
+def saved_materials():
+    owner = _current_material_owner()
+    try:
+        owner_materials = [(owner, item) for owner in _current_material_owners()
+                           for item in list_materials(owner)]
+        owner_materials.sort(
+            key=lambda pair: pair[1].get('created_at', ''), reverse=True)
+        return jsonify({
+            'success': True,
+            'materials': [_material_summary_payload(item) for _, item in owner_materials[:50]],
+            'storage_path': 'data/users/%s' % owner,
+            'storage_paths': ['data/users/%s' % value for value in _current_material_owners()],
+        })
+    except Exception as exc:
+        logger.error('读取已保存学习材料失败: %s', exc)
+        return jsonify({'success': False, 'error': '读取已保存材料时发生错误'}), 500
+
+
+@aiteacher_bp.route('/api/materials/<material_id>')
+def saved_material(material_id):
+    try:
+        material, _ = _load_current_material(material_id)
+        return jsonify({'success': True, 'material': _material_payload(material)})
+    except (MaterialError, FileNotFoundError):
+        return jsonify({'success': False, 'error': '学习材料不存在'}), 404
+
+
 @aiteacher_bp.route('/api/material/url', methods=['POST'])
 def material_from_url():
     body = request.get_json(silent=True) or {}
@@ -173,7 +232,7 @@ def upload_material():
 @aiteacher_bp.route('/materials/<material_id>')
 def view_material(material_id):
     try:
-        _, viewer_path = load_material(_current_material_owner(), material_id)
+        _, viewer_path = _load_current_material(material_id)
     except (MaterialError, FileNotFoundError):
         return jsonify({'success': False, 'error': '学习材料不存在'}), 404
     response = send_file(viewer_path, mimetype='text/html')

@@ -119,6 +119,36 @@ def _complete_html(html_source, title='学习材料', base_url=None):
     return source
 
 
+def _extract_generated_html(model_output):
+    """从模型输出中只截取完整 HTML，丢弃可能混入的规划或解释文字。"""
+    source = str(model_output or '').strip()
+    source = re.sub(r'^\s*```(?:html)?\s*', '', source, flags=re.I)
+    source = re.sub(r'\s*```\s*$', '', source, flags=re.I)
+    lowered = source.lower()
+    html_starts = [match.start() for match in re.finditer(r'<html(?:\s|>)', lowered)]
+    doctype_starts = [match.start() for match in re.finditer(r'<!doctype\s+html(?:\s|>)', lowered)]
+    start = None
+    # 选择靠近真正 <html> 根标签的 doctype，避免规划文字里提到标签时误截取。
+    for doctype_start in reversed(doctype_starts):
+        if any(doctype_start < html_start <= doctype_start + 300 for html_start in html_starts):
+            start = doctype_start
+            break
+    if start is None and html_starts:
+        start = html_starts[-1]
+    if start is None:
+        raise MaterialError('AI 没有返回可打开的 HTML 课件')
+    end = lowered.rfind('</html>')
+    if end < start:
+        raise MaterialError('AI 返回的 HTML 课件不完整')
+    document = source[start:end + len('</html>')].strip()
+    if not document.lower().startswith('<!doctype html'):
+        document = '<!doctype html>\n' + document
+    soup = BeautifulSoup(document, 'html.parser')
+    if soup.html is None or soup.body is None or len(extract_html_text(document)) < 20:
+        raise MaterialError('AI 返回的 HTML 课件内容不完整')
+    return document
+
+
 def _text_document_html(title, text, is_markdown=False):
     if is_markdown:
         body = markdown.markdown(
@@ -183,16 +213,31 @@ def create_generated_material(owner, requirement, llm_client):
 3. 使用响应式布局、舒适字号、高对比度和内联 CSS；允许少量内联 JavaScript 实现练习互动。
 4. 不引用外部脚本，不提交表单到外部网站，不收集个人信息。
 5. 内容应准确、循序渐进，并适合学生独立阅读与 AI 老师配合讲解。"""
+    generation_options = {}
+    if str(getattr(llm_client, 'model_name', '')).lower() == 'deepseek':
+        # 网页生成需要把输出额度留给完整 HTML，避免默认思考过程挤占 token。
+        generation_options['thinking'] = 'disabled'
     generated = llm_client.generate(
         system_prompt,
         '学习需求：\n' + requirement,
         max_tokens=8192,
-        temperature=0.55,
+        temperature=0.45,
         stream=False,
+        **generation_options,
     )
-    generated = re.sub(r'^\s*```(?:html)?\s*', '', generated or '', flags=re.I)
-    generated = re.sub(r'\s*```\s*$', '', generated, flags=re.I)
-    completed = _complete_html(generated, requirement[:40])
+    try:
+        completed = _extract_generated_html(generated)
+    except MaterialError:
+        # 某些推理模型会只返回规划文字；自动追加一次严格纠正，而不是保存错误内容。
+        generated = llm_client.generate(
+            system_prompt,
+            '学习需求：\n%s\n\n上一次没有返回完整网页。现在不要分析、不要解释，直接从 <!doctype html> 开始输出完整 HTML，并以 </html> 结束。' % requirement,
+            max_tokens=8192,
+            temperature=0.25,
+            stream=False,
+            **generation_options,
+        )
+        completed = _extract_generated_html(generated)
     title = _document_title(completed, requirement[:40])
     text = extract_html_text(completed)
     return _write_material(
@@ -323,4 +368,35 @@ def load_material(owner, material_id):
     viewer_path = (folder / metadata['viewer_file']).resolve()
     if viewer_path.parent != folder.resolve() or not viewer_path.is_file():
         raise FileNotFoundError('学习材料文件不存在')
+    if metadata.get('source_type') == 'generated':
+        # 兼容早期版本：模型可能把规划文字放在完整 HTML 前面。
+        source = viewer_path.read_text(encoding='utf-8', errors='replace')
+        try:
+            repaired = _extract_generated_html(source)
+        except MaterialError:
+            repaired = None
+        if repaired and repaired.strip() != source.strip():
+            viewer_path.write_text(repaired, encoding='utf-8')
+            metadata['title'] = _document_title(repaired, metadata.get('title'))
+            metadata['text'] = extract_html_text(repaired)
+            metadata_path.write_text(
+                json.dumps(metadata, ensure_ascii=False, indent=2), encoding='utf-8')
     return metadata, viewer_path
+
+
+def list_materials(owner, limit=50):
+    """列出当前用户已保存且仍可打开的材料，最新的排在前面。"""
+    folder = user_material_dir(owner)
+    materials = []
+    candidates = sorted(
+        folder.glob('*.json'), key=lambda path: path.stat().st_mtime, reverse=True)
+    for metadata_path in candidates:
+        if len(materials) >= limit:
+            break
+        material_id = metadata_path.stem
+        try:
+            metadata, _ = load_material(owner, material_id)
+        except (MaterialError, FileNotFoundError, KeyError, json.JSONDecodeError):
+            continue
+        materials.append(metadata)
+    return materials

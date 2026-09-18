@@ -232,6 +232,7 @@
         <button type="button" class="active" data-material-mode="generate"><span>✦</span> AI 生成课件</button>
         <button type="button" data-material-mode="url"><span>↗</span> 打开网页</button>
         <button type="button" data-material-mode="upload"><span>↑</span> 上传文件</button>
+        <button type="button" data-material-mode="saved"><span>▣</span> 已保存</button>
       </nav>
 
       <form class="material-form" id="generateMaterialForm" data-material-panel="generate">
@@ -258,6 +259,15 @@
         <p>文件将存入当前用户的本机目录，并转换为可在右侧阅读的页面。</p>
         <button class="material-submit" type="submit"><span>上传并开始学习</span></button>
       </form>
+      <section class="saved-materials" id="savedMaterialsPanel" data-material-panel="saved" hidden>
+        <header class="saved-materials-header">
+          <div><strong>本机学习材料</strong><small id="materialStoragePath">正在读取保存目录…</small></div>
+          <button type="button" id="refreshSavedMaterials">刷新</button>
+        </header>
+        <div class="saved-material-list" id="savedMaterialList" aria-live="polite">
+          <p class="saved-material-empty">正在读取已保存材料…</p>
+        </div>
+      </section>
       <div class="material-form-error" id="materialFormError" role="alert" hidden></div>
     </div>
   </dialog>
