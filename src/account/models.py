@@ -195,7 +195,7 @@ def get_user_by_id(user_id):
         conn = get_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute('''
-                SELECT id, name, email, psw, lastlogintime
+                SELECT id, name, email, psw, lastlogintime, SYS_ADDTIME
                 FROM sys_user
                 WHERE id = %s
             ''', (user_id,))

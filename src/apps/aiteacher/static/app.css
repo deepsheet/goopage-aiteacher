@@ -72,6 +72,26 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .icon-button svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .profile-avatar { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 9px; background: #f0c989; color: #63491d; }
 .profile-button > svg { width: 13px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.account-control { position: relative; }
+.account-trigger[aria-expanded="true"] { border-color: #9ebbaa; background: var(--green-soft); }
+.account-menu {
+  position: absolute; z-index: 30; top: calc(100% + 10px); right: 0; width: 270px; padding: 8px;
+  border: 1px solid #dfe5dc; border-radius: 16px; background: #fff;
+  box-shadow: 0 18px 55px rgba(32,45,35,.18); animation: menuIn .16s ease-out;
+}
+.account-menu[hidden] { display: none; }
+.account-summary { display: flex; gap: 10px; align-items: center; margin: 2px 2px 7px; padding: 10px; border-bottom: 1px solid #edf0ea; }
+.account-summary[hidden] { display: none; }
+.account-summary-avatar, .account-info-avatar { flex: 0 0 auto; display: grid; place-items: center; color: #63491d; background: #f0c989; font-weight: 800; }
+.account-summary-avatar { width: 36px; height: 36px; border-radius: 11px; }
+.account-summary div { min-width: 0; display: grid; gap: 2px; }
+.account-summary strong, .account-summary small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-summary strong { font-size: 12px; }.account-summary small { color: var(--muted); font-size: 10px; }
+.account-menu > button { width: 100%; border: 0; border-radius: 10px; padding: 9px 10px; display: grid; gap: 2px; color: #3b463e; background: transparent; text-align: left; cursor: pointer; }
+.account-menu > button[hidden] { display: none; }
+.account-menu > button:hover { background: #f3f6f1; }
+.account-menu > button span { font-size: 12px; font-weight: 700; }.account-menu > button small { color: var(--muted); font-size: 9px; }
+.account-menu > button.account-logout { margin-top: 4px; border-top: 1px solid #edf0ea; border-radius: 0 0 10px 10px; color: #a44f3d; }
 
 .classroom { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(360px, 39%) 1fr; }
 .chat-panel, .learning-panel { min-height: calc(100vh - 76px); max-height: calc(100vh - 76px); }
@@ -240,6 +260,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .profile-dialog input[type="text"], .profile-dialog select { border: 1px solid var(--line); border-radius: 11px; padding: 10px 11px; background: #fbfcf9; outline: 0; }
 .profile-dialog fieldset { border: 0; padding: 0; margin: 16px 0 0; }.chip-options { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }.chip-options label input { position: absolute; opacity: 0; }.chip-options span { display: block; padding: 7px 10px; background: #f3f5f0; border: 1px solid transparent; border-radius: 999px; font-size: 10px; cursor: pointer; }.chip-options input:checked + span { color: var(--green-dark); background: var(--green-soft); border-color: #bad6c5; }
 .dialog-actions { margin-top: 20px; }.save-profile { width: 100%; border: 0; border-radius: 12px; padding: 11px; color: #fff; background: var(--green); font-weight: 700; cursor: pointer; }
+.account-dialog { width: min(470px, calc(100vw - 28px)); border: 0; border-radius: 24px; padding: 0; box-shadow: 0 30px 100px rgba(28,39,31,.28); }
+.account-dialog::backdrop { background: rgba(25,34,27,.48); backdrop-filter: blur(5px); }
+.account-dialog-body { padding: 25px; }.account-dialog header { display: flex; align-items: flex-start; justify-content: space-between; }
+.account-dialog h2 { margin: 4px 0 0; font-size: 24px; }
+.account-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 22px 0 18px; padding: 5px; border-radius: 13px; background: #f0f2ed; }
+.account-tabs button { min-height: 38px; border: 0; border-radius: 9px; color: #798078; background: transparent; cursor: pointer; font-size: 12px; font-weight: 700; }
+.account-tabs button.active { color: var(--green-dark); background: #fff; box-shadow: 0 3px 12px rgba(49,67,54,.08); }
+.account-form { display: grid; gap: 8px; }.account-form[hidden] { display: none; }
+.account-form > label:not(.remember-account) { margin-top: 5px; color: #3d493f; font-size: 11px; font-weight: 800; }
+.account-form > input { width: 100%; min-height: 43px; border: 1px solid #dce2d9; border-radius: 12px; padding: 0 12px; color: var(--ink); background: #fbfcf9; outline: 0; }
+.account-form > input:focus { border-color: #9fc5ad; box-shadow: 0 0 0 3px rgba(38,112,91,.08); background: #fff; }
+.remember-account { display: flex; align-items: center; gap: 7px; margin: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }
+.account-submit { min-height: 44px; margin-top: 7px; border: 0; border-radius: 12px; color: #fff; background: var(--green); cursor: pointer; font-weight: 800; }
+.account-submit:hover { background: var(--green-dark); }.account-submit:disabled { cursor: wait; opacity: .68; }
+.account-form-error { margin-top: 12px; padding: 10px 12px; border-radius: 10px; color: #974a35; background: #fff0eb; font-size: 11px; line-height: 1.5; }
+.account-form-error[hidden] { display: none; }
+.account-info-card { display: flex; align-items: center; gap: 13px; margin-top: 22px; padding: 16px; border: 1px solid #dfe8df; border-radius: 16px; background: #f6faf7; }
+.account-info-avatar { width: 48px; height: 48px; border-radius: 15px; font-size: 18px; }
+.account-info-card div { min-width: 0; display: grid; gap: 4px; }.account-info-card strong { font-size: 17px; }.account-info-card span:not(.account-info-avatar) { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.account-detail-list { margin: 16px 0; }.account-detail-list > div { display: flex; justify-content: space-between; gap: 18px; padding: 11px 2px; border-bottom: 1px solid #edf0ea; font-size: 11px; }
+.account-detail-list dt { color: var(--muted); }.account-detail-list dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+.account-secondary-action { width: 100%; min-height: 42px; border: 1px solid #cddbd0; border-radius: 11px; color: var(--green-dark); background: var(--green-soft); cursor: pointer; font-weight: 700; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 50; background: #25332a; color: #fff; border-radius: 12px; padding: 10px 14px; font-size: 11px; box-shadow: 0 10px 30px rgba(0,0,0,.2); transition: opacity .2s, transform .2s; }.toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 .quiet-mode *, .quiet-mode *::before, .quiet-mode *::after { animation: none !important; transition-duration: .01ms !important; }
@@ -249,6 +291,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 @keyframes typing { 0%, 70%, 100% { transform: translateY(0); opacity: .45; } 35% { transform: translateY(-3px); opacity: 1; } }
 @keyframes messageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 
 @media (max-width: 980px) {
@@ -258,7 +301,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .lesson-tabs { padding-inline: 18px; }.lesson-stage { padding: 18px; }.course-header, .lesson-footer { padding-inline: 18px; }
 }
 @media (max-width: 760px) {
-  body { overflow: auto; }.topbar { position: sticky; top: 0; height: 64px; padding: 0 14px; }.brand-copy small, .icon-button span, .profile-button > span:not(.profile-avatar) { display: none; }.icon-button, .profile-button { padding: 0 9px; }
+  body { overflow: auto; }.topbar { position: sticky; top: 0; height: 64px; padding: 0 14px; }.brand-copy small, .icon-button span, .profile-button > span:not(.profile-avatar) { display: none; }.icon-button, .profile-button { padding: 0 9px; }.account-menu { position: fixed; top: 69px; right: 12px; }
   .classroom { display: flex; flex-direction: column; }.chat-panel, .learning-panel { min-height: auto; max-height: none; }
   .learning-panel { order: 1; }.chat-panel { order: 2; border-right: 0; border-top: 1px solid var(--line); }
   .course-header { position: relative; top: auto; z-index: 5; }.course-progress-wrap { width: 95px; }.lesson-stage { overflow: visible; }

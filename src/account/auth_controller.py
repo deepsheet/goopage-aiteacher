@@ -32,12 +32,19 @@ def handle_register():
         username = data.get('username', '').strip()
         password = data.get('password', '')
 
-        # 验证必填字段
-        if not all([account, username]):
+        # 验证必填字段。旧账号仍可按原逻辑登录，新注册账号必须设置密码。
+        if not all([account, username, password]):
             return jsonify({
                 'status': 'error',
-                'message': get_translation('error_account_required', lang)
+                'message': '请填写账号名称、邮箱或手机号和密码'
             }), 400
+
+        if not 2 <= len(username) <= 32:
+            return jsonify({'status': 'error', 'message': '账号名称需为 2–32 个字符'}), 400
+        if len(account) > 120:
+            return jsonify({'status': 'error', 'message': '邮箱或手机号不能超过 120 个字符'}), 400
+        if not 6 <= len(password) <= 128:
+            return jsonify({'status': 'error', 'message': '密码需为 6–128 位'}), 400
 
         # 获取当前域名
         server = request.host

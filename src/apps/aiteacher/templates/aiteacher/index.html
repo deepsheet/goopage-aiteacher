@@ -30,11 +30,28 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.8L4.3 16a1 1 0 0 0 .88 1.47h13.64A1 1 0 0 0 19.7 16L18 12.8V9a6 6 0 0 0-6-6Zm-2 17h4"/></svg>
           <span>安静模式</span>
         </button>
-        <button class="profile-button" id="profileOpen" type="button">
-          <span class="profile-avatar" aria-hidden="true">小</span>
+        <button class="icon-button preferences-button" id="profileOpen" type="button" title="学习偏好">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v1.1a7.8 7.8 0 0 1 1.7 1l1-.6a2 2 0 0 1 2.7.7l.6 1a2 2 0 0 1-.7 2.8l-1 .5a8 8 0 0 1 0 2l1 .5a2 2 0 0 1 .7 2.8l-.6 1a2 2 0 0 1-2.7.7l-1-.6a7.8 7.8 0 0 1-1.7 1V21a3 3 0 0 1-6 0v-1.1a7.8 7.8 0 0 1-1.7-1l-1 .6a2 2 0 0 1-2.7-.7l-.6-1a2 2 0 0 1 .7-2.8l1-.5a8 8 0 0 1 0-2l-1-.5a2 2 0 0 1-.7-2.8l.6-1a2 2 0 0 1 2.7-.7l1 .6a7.8 7.8 0 0 1 1.7-1V6a3 3 0 0 1 3-3Z"/><circle cx="12" cy="13.5" r="2.5"/></svg>
           <span>学习偏好</span>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
         </button>
+        <div class="account-control" id="accountControl">
+          <button class="profile-button account-trigger" id="accountTrigger" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span class="profile-avatar" id="accountAvatar" aria-hidden="true">访</span>
+            <span id="accountName">登录 / 注册</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+          </button>
+          <div class="account-menu" id="accountMenu" role="menu" hidden>
+            <div class="account-summary" id="accountSummary" hidden>
+              <span class="account-summary-avatar" id="accountSummaryAvatar">访</span>
+              <div><strong id="accountSummaryName">未登录</strong><small id="accountSummaryEmail"></small></div>
+            </div>
+            <button type="button" role="menuitem" id="accountLoginAction"><span>登录</span><small>继续你的学习记录</small></button>
+            <button type="button" role="menuitem" id="accountRegisterAction"><span>注册账号</span><small>创建新的学习空间</small></button>
+            <button type="button" role="menuitem" id="accountProfileAction" hidden><span>账号信息</span><small>查看用户名和注册信息</small></button>
+            <button type="button" role="menuitem" id="accountPreferencesAction" hidden><span>学习偏好</span><small>调整称呼、表达方式和语速</small></button>
+            <button type="button" role="menuitem" class="account-logout" id="accountLogoutAction" hidden><span>退出登录</span></button>
+          </div>
+        </div>
       </nav>
     </header>
 
@@ -268,6 +285,57 @@
       </label>
       <div class="dialog-actions"><button class="save-profile" value="default" type="submit">保存偏好</button></div>
     </form>
+  </dialog>
+
+  <dialog class="account-dialog" id="accountDialog">
+    <div class="account-dialog-body">
+      <header>
+        <div><span class="dialog-kicker">欢迎来到 AI老师</span><h2 id="accountDialogTitle">登录账号</h2></div>
+        <button class="dialog-close" id="accountDialogClose" aria-label="关闭" type="button">×</button>
+      </header>
+      <nav class="account-tabs" aria-label="账号操作">
+        <button type="button" class="active" data-account-mode="login">登录</button>
+        <button type="button" data-account-mode="register">注册</button>
+      </nav>
+      <form class="account-form" id="loginForm" data-account-panel="login">
+        <label for="loginAccount">用户名或邮箱</label>
+        <input id="loginAccount" name="account" type="text" maxlength="120" autocomplete="username" required placeholder="输入用户名或邮箱">
+        <label for="loginPassword">密码</label>
+        <input id="loginPassword" name="password" type="password" maxlength="128" autocomplete="current-password" placeholder="输入密码">
+        <label class="remember-account"><input id="rememberAccount" type="checkbox"><span>记住账号</span></label>
+        <button class="account-submit" type="submit"><span>登录并继续学习</span></button>
+      </form>
+      <form class="account-form" id="registerForm" data-account-panel="register" hidden>
+        <label for="registerUsername">账号名称</label>
+        <input id="registerUsername" name="username" type="text" minlength="2" maxlength="32" autocomplete="username" required placeholder="2–32 个字符">
+        <label for="registerEmail">邮箱或手机号</label>
+        <input id="registerEmail" name="email" type="text" maxlength="120" autocomplete="email" required placeholder="用于登录和找回账号">
+        <label for="registerPassword">设置密码</label>
+        <input id="registerPassword" name="password" type="password" minlength="6" maxlength="128" autocomplete="new-password" required placeholder="至少 6 位">
+        <label for="registerPasswordConfirm">确认密码</label>
+        <input id="registerPasswordConfirm" name="password_confirm" type="password" minlength="6" maxlength="128" autocomplete="new-password" required placeholder="再次输入密码">
+        <button class="account-submit" type="submit"><span>创建账号并登录</span></button>
+      </form>
+      <div class="account-form-error" id="accountFormError" role="alert" hidden></div>
+    </div>
+  </dialog>
+
+  <dialog class="account-dialog account-info-dialog" id="accountInfoDialog">
+    <div class="account-dialog-body">
+      <header>
+        <div><span class="dialog-kicker">你的学习账号</span><h2>账号信息</h2></div>
+        <button class="dialog-close" id="accountInfoClose" aria-label="关闭" type="button">×</button>
+      </header>
+      <div class="account-info-card">
+        <span class="account-info-avatar" id="accountInfoAvatar">访</span>
+        <div><strong id="accountInfoName">—</strong><span id="accountInfoEmail">—</span></div>
+      </div>
+      <dl class="account-detail-list">
+        <div><dt>账号 ID</dt><dd id="accountInfoId">—</dd></div>
+        <div><dt>注册时间</dt><dd id="accountInfoRegistered">—</dd></div>
+      </dl>
+      <button class="account-secondary-action" id="accountInfoPreferences" type="button">设置学习偏好</button>
+    </div>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

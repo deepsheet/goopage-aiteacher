@@ -12,6 +12,7 @@ from flask import Flask
 from src.apps.aiteacher import aiteacher_bp
 from src.apps.aiteacher import materials
 from src.apps.aiteacher.routes import MAX_HISTORY_ITEMS, _chat_messages
+from src.account import account_bp
 from src.web_server import app as web_app
 
 
@@ -20,6 +21,7 @@ class AITeacherSmokeTest(unittest.TestCase):
         self.app = Flask(__name__)
         self.app.config.update(TESTING=True, SECRET_KEY='test')
         self.app.register_blueprint(aiteacher_bp, url_prefix='/aiteacher')
+        self.app.register_blueprint(account_bp, url_prefix='/account')
         self.client = self.app.test_client()
         self.temp_dir = tempfile.TemporaryDirectory()
         self.data_root_patch = patch.object(
@@ -50,6 +52,51 @@ class AITeacherSmokeTest(unittest.TestCase):
         self.assertEqual(len(payload['course']['lessons']), 4)
         self.assertEqual(payload['course']['lessons'][0]['id'], 'choose')
         self.assertEqual(payload['course']['lessons'][-1]['id'], 'turn-taking')
+
+    def test_home_integrates_account_controls_and_dialogs(self):
+        page = self.client.get('/aiteacher/')
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b'id="accountTrigger"', page.data)
+        self.assertIn(b'id="loginForm"', page.data)
+        self.assertIn(b'id="registerForm"', page.data)
+        self.assertIn(b'id="accountInfoDialog"', page.data)
+
+    def test_login_session_check_and_logout(self):
+        verified_user = {
+            'id': 'u-100', 'username': 'test-learner', 'email': 'learner@example.com',
+        }
+        with patch('src.account.auth_controller.verify_login', return_value={
+            'status': 'success', 'user': verified_user,
+        }):
+            login = self.client.post('/account/api/login', json={
+                'username': 'test-learner', 'password': 'secret123',
+            })
+        self.assertEqual(login.status_code, 200)
+        self.assertEqual(login.get_json()['user']['username'], 'test-learner')
+
+        status = self.client.get('/account/api/check_login').get_json()
+        self.assertTrue(status['isLoggedIn'])
+        self.assertEqual(status['user']['email'], 'learner@example.com')
+
+        logout = self.client.get('/account/api/logout')
+        self.assertEqual(logout.status_code, 200)
+        self.assertFalse(self.client.get('/account/api/check_login').get_json()['isLoggedIn'])
+
+    def test_registration_requires_a_regular_password(self):
+        missing = self.client.post('/account/api/register', json={
+            'username': 'new-learner', 'email': 'new@example.com',
+        })
+        self.assertEqual(missing.status_code, 400)
+
+        with patch('src.account.auth_controller.create_user', return_value={
+            'status': 'success', 'user_id': 'u-101',
+        }) as create_user:
+            created = self.client.post('/account/api/register', json={
+                'username': 'new-learner', 'email': 'new@example.com',
+                'password': 'secret123',
+            })
+        self.assertEqual(created.status_code, 200)
+        create_user.assert_called_once()
 
     def test_empty_chat_message_is_rejected_without_calling_llm(self):
         response = self.client.post('/aiteacher/api/chat', json={})

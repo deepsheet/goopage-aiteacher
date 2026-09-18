@@ -18,6 +18,7 @@
     quiet: false,
     materialMode: false,
     material: null,
+    account: { isLoggedIn: false, user: null },
     preferences: { name: '', modes: [], interests: '', speechRate: 0.86 },
     messages: [{ role: 'assistant', content: initialGreeting }],
   };
@@ -573,6 +574,184 @@
     }
   }
 
+  function accountInitial(username) {
+    return String(username || '访').trim().slice(0, 1).toUpperCase() || '访';
+  }
+
+  function renderAccount() {
+    const loggedIn = state.account.isLoggedIn && state.account.user;
+    const user = state.account.user || {};
+    const initial = accountInitial(user.username);
+    $('#accountAvatar').textContent = initial;
+    $('#accountName').textContent = loggedIn ? user.username : '登录 / 注册';
+    $('#accountSummary').hidden = !loggedIn;
+    $('#accountLoginAction').hidden = Boolean(loggedIn);
+    $('#accountRegisterAction').hidden = Boolean(loggedIn);
+    $('#accountProfileAction').hidden = !loggedIn;
+    $('#accountPreferencesAction').hidden = !loggedIn;
+    $('#accountLogoutAction').hidden = !loggedIn;
+    if (loggedIn) {
+      $('#accountSummaryAvatar').textContent = initial;
+      $('#accountSummaryName').textContent = user.username;
+      $('#accountSummaryEmail').textContent = user.email || '已登录';
+    }
+  }
+
+  async function accountRequest(url, options = {}) {
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      ...options,
+      headers: options.body ? { 'Content-Type': 'application/json', ...(options.headers || {}) } : options.headers,
+    });
+    let result = {};
+    try { result = await response.json(); } catch (_) { /* handled below */ }
+    if (!response.ok || result.status !== 'success') throw new Error(result.message || '账号操作失败，请稍后重试');
+    return result;
+  }
+
+  async function refreshAccount() {
+    try {
+      const result = await accountRequest('/account/api/check_login');
+      state.account = { isLoggedIn: Boolean(result.isLoggedIn), user: result.user || null };
+    } catch (_) {
+      state.account = { isLoggedIn: false, user: null };
+    }
+    renderAccount();
+  }
+
+  function closeAccountMenu() {
+    $('#accountMenu').hidden = true;
+    $('#accountTrigger').setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleAccountMenu() {
+    const willOpen = $('#accountMenu').hidden;
+    $('#accountMenu').hidden = !willOpen;
+    $('#accountTrigger').setAttribute('aria-expanded', String(willOpen));
+  }
+
+  function setAccountMode(mode) {
+    $$('.account-tabs [data-account-mode]').forEach(button => {
+      button.classList.toggle('active', button.dataset.accountMode === mode);
+    });
+    $$('[data-account-panel]').forEach(panel => { panel.hidden = panel.dataset.accountPanel !== mode; });
+    $('#accountDialogTitle').textContent = mode === 'register' ? '创建学习账号' : '登录账号';
+    $('#accountFormError').hidden = true;
+  }
+
+  function openAccountDialog(mode) {
+    closeAccountMenu();
+    setAccountMode(mode);
+    if (mode === 'login') {
+      try {
+        const remembered = localStorage.getItem('aiteacher-remembered-account') || '';
+        if (!$('#loginAccount').value) $('#loginAccount').value = remembered;
+        $('#rememberAccount').checked = Boolean(remembered);
+      } catch (_) { /* Remembering an account is optional. */ }
+    }
+    if (!$('#accountDialog').open) $('#accountDialog').showModal();
+    window.setTimeout(() => $(mode === 'register' ? '#registerUsername' : '#loginAccount').focus(), 0);
+  }
+
+  function setAccountFormBusy(form, busy, waitingText) {
+    const button = $('.account-submit', form);
+    const label = $('span', button);
+    if (!button.dataset.defaultLabel) button.dataset.defaultLabel = label.textContent;
+    button.disabled = busy;
+    label.textContent = busy ? waitingText : button.dataset.defaultLabel;
+  }
+
+  function showAccountError(message) {
+    $('#accountFormError').textContent = message;
+    $('#accountFormError').hidden = false;
+  }
+
+  async function submitLogin(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const account = $('#loginAccount').value.trim();
+    const password = $('#loginPassword').value;
+    setAccountFormBusy(form, true, '正在登录…');
+    $('#accountFormError').hidden = true;
+    try {
+      const result = await accountRequest('/account/api/login', {
+        method: 'POST', body: JSON.stringify({ username: account, password }),
+      });
+      state.account = { isLoggedIn: true, user: result.user };
+      try {
+        if ($('#rememberAccount').checked) localStorage.setItem('aiteacher-remembered-account', account);
+        else localStorage.removeItem('aiteacher-remembered-account');
+      } catch (_) { /* Login must not depend on browser storage. */ }
+      renderAccount();
+      $('#accountDialog').close();
+      form.reset();
+      showToast(`欢迎回来，${result.user.username}`);
+    } catch (error) {
+      showAccountError(error.message);
+    } finally {
+      setAccountFormBusy(form, false, '');
+    }
+  }
+
+  async function submitRegister(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const username = $('#registerUsername').value.trim();
+    const email = $('#registerEmail').value.trim();
+    const password = $('#registerPassword').value;
+    if (password !== $('#registerPasswordConfirm').value) {
+      showAccountError('两次输入的密码不一致');
+      return;
+    }
+    setAccountFormBusy(form, true, '正在创建账号…');
+    $('#accountFormError').hidden = true;
+    try {
+      await accountRequest('/account/api/register', {
+        method: 'POST', body: JSON.stringify({ username, email, password }),
+      });
+      const result = await accountRequest('/account/api/login', {
+        method: 'POST', body: JSON.stringify({ username, password }),
+      });
+      state.account = { isLoggedIn: true, user: result.user };
+      renderAccount();
+      $('#accountDialog').close();
+      form.reset();
+      showToast(`账号创建成功，欢迎你，${username}`);
+    } catch (error) {
+      showAccountError(error.message);
+    } finally {
+      setAccountFormBusy(form, false, '');
+    }
+  }
+
+  async function showAccountProfile() {
+    closeAccountMenu();
+    try {
+      const result = await accountRequest('/account/api/profile');
+      const profile = result.data;
+      $('#accountInfoAvatar').textContent = accountInitial(profile.username);
+      $('#accountInfoName').textContent = profile.username || '—';
+      $('#accountInfoEmail').textContent = profile.email || '—';
+      $('#accountInfoId').textContent = profile.user_id || '—';
+      $('#accountInfoRegistered').textContent = profile.register_time || '暂无记录';
+      $('#accountInfoDialog').showModal();
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+
+  async function logoutAccount() {
+    closeAccountMenu();
+    try {
+      await accountRequest('/account/api/logout');
+      state.account = { isLoggedIn: false, user: null };
+      renderAccount();
+      showToast('已安全退出账号');
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+
   function bindEvents() {
     $('#sendButton').addEventListener('click', sendComposerMessage);
     $('#messageInput').addEventListener('keydown', event => {
@@ -617,6 +796,22 @@
     $('#stopRecording').addEventListener('click', stopRecording);
     $('#profileOpen').addEventListener('click', openProfile);
     $('#profileForm').addEventListener('submit', saveProfile);
+    $('#accountTrigger').addEventListener('click', toggleAccountMenu);
+    $('#accountLoginAction').addEventListener('click', () => openAccountDialog('login'));
+    $('#accountRegisterAction').addEventListener('click', () => openAccountDialog('register'));
+    $('#accountProfileAction').addEventListener('click', showAccountProfile);
+    $('#accountPreferencesAction').addEventListener('click', () => { closeAccountMenu(); openProfile(); });
+    $('#accountLogoutAction').addEventListener('click', logoutAccount);
+    $('#accountDialogClose').addEventListener('click', () => $('#accountDialog').close());
+    $('#accountInfoClose').addEventListener('click', () => $('#accountInfoDialog').close());
+    $('#accountInfoPreferences').addEventListener('click', () => { $('#accountInfoDialog').close(); openProfile(); });
+    $$('.account-tabs [data-account-mode]').forEach(button => button.addEventListener('click', () => setAccountMode(button.dataset.accountMode)));
+    $('#loginForm').addEventListener('submit', submitLogin);
+    $('#registerForm').addEventListener('submit', submitRegister);
+    document.addEventListener('click', event => {
+      if (!$('#accountControl').contains(event.target)) closeAccountMenu();
+    });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAccountMenu(); });
     $('#materialOpen').addEventListener('click', () => openMaterialDialog('generate'));
     $('#replaceMaterial').addEventListener('click', () => openMaterialDialog('generate'));
     $('#returnDemoCourse').addEventListener('click', showDemoCourse);
@@ -652,4 +847,5 @@
   $('#voiceOutputToggle').setAttribute('aria-pressed', String(state.autoVoice));
   bindEvents();
   renderLesson();
+  refreshAccount();
 })();
