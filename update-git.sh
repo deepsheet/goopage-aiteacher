@@ -15,6 +15,7 @@ EXPECTED_SSH="git@github.com:deepsheet/goopage-aiteacher.git"
 REMOTE_NAME="origin"
 BRANCH_NAME="main"
 COMMIT_MESSAGE="${1:-chore: sync local updates}"
+SECRET_PATTERN="(^|[^A-Za-z0-9])(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|LTAI[A-Za-z0-9]{12,}|AIza[0-9A-Za-z_-]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY)|(password|api_key|access_key_secret|secret_key)[[:space:]]*[:=][[:space:]]*[\"'][^\"']{4,}[\"']"
 
 cd "$REPO_DIR"
 
@@ -73,7 +74,7 @@ git diff --cached --check
 # 只检查新增行；匹配常见云密钥、私钥和非空的敏感配置字面量。
 if git diff --cached --no-color --unified=0 -- . \
   | sed -n '/^+++ /d; /^+/p' \
-  | grep -Eiq '(^|[^A-Za-z0-9])(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|LTAI[A-Za-z0-9]{12,}|AIza[0-9A-Za-z_-]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY)|(password|api_key|access_key_secret|secret_key)[[:space:]]*[:=][[:space:]]*["'"'][^"'"']{4,}["'"']'; then
+  | grep -Eiq "$SECRET_PATTERN"; then
   fail "暂存内容中发现疑似密钥或非空敏感配置。请移到 config/config_local.py 或环境变量后重试。"
 fi
 
