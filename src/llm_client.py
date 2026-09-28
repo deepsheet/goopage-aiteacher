@@ -27,6 +27,10 @@ from config.config import (
 from src.logger import logger
 
 
+# 非流式调用的默认读超时（秒）。现代模型支持长输出，默认预留足够时间避免中途读超时。
+DEFAULT_NONSTREAM_TIMEOUT = 600
+
+
 class LLMClient:
     """
     统一的大语言模型客户端类，支持多个模型提供商
@@ -66,7 +70,7 @@ class LLMClient:
     # ============================================================
 
     def generate(self, system_prompt, user_content, max_tokens=4096, temperature=0.7,
-                 stream=False, thinking=None):
+                 stream=False, thinking=None, timeout=None):
         """
         通用对话接口：传入系统提示词与用户内容，返回模型生成结果
 
@@ -76,6 +80,7 @@ class LLMClient:
         @param {float} temperature - 采样温度
         @param {bool} stream - 是否使用流式输出（适合长内容）
         @param {str|None} thinking - 可选，DeepSeek 思考模式（enabled/disabled）
+        @param {int|None} timeout - 可选，非流式请求超时秒数（长输出生成需调大）
         @return {str} - 模型生成的文本内容
         """
         logger.info(f"开始调用 LLM，max_tokens={max_tokens}, stream={stream}")
@@ -89,6 +94,9 @@ class LLMClient:
             "temperature": temperature,
             "stream": stream
         }
+        if timeout:
+            # 仅用于控制本地 requests 超时，发送前会从请求体中 pop 掉。
+            prompt["timeout"] = timeout
         if thinking in ('enabled', 'disabled'):
             prompt['thinking'] = {'type': thinking}
         response = self._call_api(prompt)
@@ -160,8 +168,8 @@ class LLMClient:
                 # 确保非流式模式下 stream 参数为 False（双重保障）
                 prompt['stream'] = False
 
-                # 从 prompt 中获取 timeout，默认 180秒
-                timeout = prompt.get('timeout', 180)
+                # 从 prompt 中获取 timeout，默认 DEFAULT_NONSTREAM_TIMEOUT；pop 避免把本地超时参数发给模型
+                timeout = prompt.pop('timeout', DEFAULT_NONSTREAM_TIMEOUT)
 
                 logger.info(f"API请求 - model: {prompt.get('model')}, messages数量: {len(prompt.get('messages', []))}, timeout: {timeout}秒")
 

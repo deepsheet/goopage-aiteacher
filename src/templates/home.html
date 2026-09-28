@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI老师 · 能看见你正在学什么的 AI 陪练课堂</title>
+  <meta name="description" content="AI老师是一个能感知学习内容的 AI 陪练课堂：左侧对话、右侧课件，实时读取你正在学的内容，支持语音与文字，记住你的习惯，下次打开自动恢复进度。">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1c241f; --muted: #5f6a60; --line: #e4e9e0;
+      --paper: #ffffff; --canvas: #f4f6ef; --soft: #eaf3ee;
+      --green: #26705b; --green-dark: #1c5647; --green-soft: #e6f2eb;
+      --purple: #6657a8; --purple-soft: #efeafb; --orange: #e0813f;
+      --radius: 22px; --shadow: 0 24px 60px rgba(30, 55, 43, .10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--ink); background: var(--canvas);
+      font-family: "DM Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1120px, 92vw); margin: 0 auto; }
+
+    /* Header */
+    header.site {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: saturate(1.2) blur(10px);
+      background: rgba(244, 246, 239, .82); border-bottom: 1px solid var(--line);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(150deg, var(--green), #3f9b7f); color: #fff;
+      font-weight: 800; font-size: 19px; box-shadow: 0 8px 20px rgba(38,112,91,.28);
+    }
+    .brand-copy strong { display: block; font-size: 17px; letter-spacing: .5px; }
+    .brand-copy small { color: var(--muted); font-size: 11px; }
+    .nav-links { display: flex; align-items: center; gap: 26px; }
+    .nav-links a { color: var(--muted); font-size: 14px; font-weight: 600; }
+    .nav-links a:hover { color: var(--green-dark); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+      border-radius: 999px; font-weight: 700; font-size: 15px; padding: 11px 22px;
+      border: 1px solid transparent; transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn-primary { background: var(--green); color: #fff; box-shadow: 0 14px 30px rgba(38,112,91,.32); }
+    .btn-primary:hover { background: var(--green-dark); transform: translateY(-2px); }
+    .btn-ghost { background: #fff; color: var(--green-dark); border-color: var(--line); }
+    .btn-ghost:hover { border-color: #a9cdb9; background: var(--green-soft); }
+    .nav .btn { padding: 9px 18px; font-size: 14px; }
+
+    /* Hero */
+    .hero { padding: 78px 0 46px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 54px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+      color: var(--green-dark); background: var(--green-soft); border-radius: 999px; padding: 7px 15px; margin-bottom: 22px;
+    }
+    h1 { font-size: clamp(30px, 4.6vw, 50px); line-height: 1.18; margin: 0 0 18px; letter-spacing: -.5px; }
+    h1 .accent { color: var(--green); }
+    .lede { font-size: clamp(16px, 1.6vw, 19px); color: var(--muted); margin: 0 0 30px; max-width: 34em; }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .hero-note { margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .hero-note b { color: var(--green-dark); }
+
+    /* Chat mock */
+    .mock {
+      background: #fff; border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow);
+      padding: 18px; display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; min-height: 360px;
+    }
+    .mock-chat { display: flex; flex-direction: column; gap: 12px; }
+    .bubble { border-radius: 15px; padding: 11px 14px; font-size: 13.5px; max-width: 90%; }
+    .bubble.ai { background: var(--soft); border-bottom-left-radius: 5px; }
+    .bubble.me { background: var(--green); color: #fff; align-self: flex-end; border-bottom-right-radius: 5px; }
+    .typing { display: inline-flex; gap: 4px; }
+    .typing i { width: 6px; height: 6px; background: var(--green); border-radius: 50%; opacity: .5; animation: blink 1.2s infinite; }
+    .typing i:nth-child(2){ animation-delay: .2s } .typing i:nth-child(3){ animation-delay: .4s }
+    @keyframes blink { 0%,60%,100%{opacity:.3} 30%{opacity:1} }
+    .mock-panel {
+      background: linear-gradient(165deg, #f3f6ef, #e9f1ea); border: 1px dashed #cfe0d4; border-radius: 16px;
+      padding: 16px; display: flex; flex-direction: column; gap: 12px; justify-content: center;
+    }
+    .mock-panel .chip { font-size: 12px; font-weight: 700; color: var(--green-dark); }
+    .opt { display: flex; gap: 10px; }
+    .opt span { flex: 1; text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 6px; font-size: 13px; }
+    .opt span.on { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-soft); }
+    .opt .em { display: block; font-size: 22px; }
+
+    /* Sections */
+    section { padding: 60px 0; }
+    .sec-head { text-align: center; max-width: 42em; margin: 0 auto 44px; }
+    .sec-head .eyebrow { margin-bottom: 14px; }
+    h2 { font-size: clamp(24px, 3.2vw, 34px); margin: 0 0 12px; letter-spacing: -.3px; }
+    .sec-head p { color: var(--muted); margin: 0; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 24px; transition: transform .18s ease, box-shadow .25s ease; }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .card .ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; background: var(--green-soft); margin-bottom: 16px; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+    /* Steps */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; counter-reset: step; }
+    .step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 26px; position: relative; }
+    .step .num { counter-increment: step; font-size: 13px; font-weight: 800; color: var(--green); background: var(--green-soft); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 16px; }
+    .step .num::before { content: counter(step); }
+    .step h3 { margin: 0 0 8px; font-size: 17px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+    /* Callout */
+    .callout { background: linear-gradient(135deg, #20685179, transparent), var(--soft); border: 1px solid #cfe0d4; border-radius: 26px; padding: 40px clamp(24px, 5vw, 56px); display: grid; grid-template-columns: 1.4fr 1fr; gap: 30px; align-items: center; }
+    .callout h2 { margin-top: 0; }
+    .callout p { color: var(--green-dark); margin: 0 0 22px; }
+    .callout ul { margin: 0; padding-left: 1.1em; color: var(--green-dark); font-size: 14.5px; }
+    .callout ul li { margin: 6px 0; }
+    .callout .tag { font-size: 13px; font-weight: 700; color: var(--purple); background: var(--purple-soft); border-radius: 999px; padding: 6px 14px; display: inline-block; margin-bottom: 16px; }
+    .callout-cta { text-align: center; }
+    .mini-stats { display: grid; gap: 14px; }
+    .mini-stats div { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .mini-stats b { display: block; font-size: 26px; color: var(--green-dark); }
+    .mini-stats small { color: var(--muted); font-size: 12.5px; }
+
+    /* Closing CTA */
+    .closing { text-align: center; padding: 66px 0 78px; }
+    .closing h2 { margin: 0 0 12px; }
+    .closing p { color: var(--muted); margin: 0 0 26px; }
+
+    footer.site { border-top: 1px solid var(--line); background: #fff; padding: 30px 0; }
+    .foot { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .disclaimer { font-size: 12px; color: var(--muted); max-width: 46em; margin: 14px auto 0; text-align: center; }
+
+    @media (max-width: 880px) {
+      .hero-grid, .callout { grid-template-columns: 1fr; }
+      .grid, .steps { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .mock { grid-template-columns: 1fr; }
+      .hero { padding-top: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/" aria-label="AI老师首页">
+        <span class="brand-mark">A</span>
+        <span class="brand-copy"><strong>AI老师</strong><small>一起学，会更容易</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">核心能力</a>
+        <a href="#how">如何使用</a>
+        <a href="#starter">体验课</a>
+      </nav>
+      <a class="btn btn-primary" href="/study">进入课堂</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">🫧 看得见你正在学什么的 AI 老师</span>
+          <h1>它不只回答问题，<br>更<span class="accent">跟着屏幕上的课件</span>一步步带你学</h1>
+          <p class="lede">左边对话、右边学习区。每一轮交流，AI 老师都会读取当前课程、屏幕文字和你的操作，用文字或语音自然地引导你继续——还会记住你的习惯，下次打开自动接着上次的进度。</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="/study">立即开始体验 →</a>
+            <a class="btn btn-ghost" href="#features">了解它能做什么</a>
+          </div>
+          <p class="hero-note">浏览器打开即用 · 支持文字、录音与语音播报 · <b>内置免费的体验课</b></p>
+        </div>
+        <div class="mock" aria-hidden="true">
+          <div class="mock-chat">
+            <div class="bubble ai">你想先玩哪一个？指一指、点一下，或者说出来都可以。<span class="typing"><i></i><i></i><i></i></span></div>
+            <div class="bubble me">🫧 泡泡</div>
+            <div class="bubble ai">太好了——<b>我要泡泡</b>。我们再来一次，你可以说给我听。</div>
+            <div class="bubble me">还要…泡泡</div>
+            <div class="bubble ai">你说得很清楚！那这次让它「再来一次」好吗？</div>
+          </div>
+          <div class="mock-panel">
+            <span class="chip">当前学习区</span>
+            <div class="opt">
+              <span class="on"><span class="em">🫧</span>泡泡</span>
+              <span><span class="em">🚗</span>小车</span>
+              <span><span class="em">🎵</span>音乐</span>
+            </div>
+            <span class="chip" style="margin-top:6px">第 1 站 · 我来选择</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="eyebrow">核心能力</span>
+          <h2>为「真的学得进去」而设计的六件事</h2>
+          <p>不是又一个聊天框，而是一个懂教学、能承接上下文、还会记得你的陪练老师。</p>
+        </div>
+        <div class="grid">
+          <div class="card"><div class="ico">🎯</div><h3>上下文感知对话</h3><p>自动读取右侧课件、屏幕文字与你的每一步操作，回答始终贴着「你正在做的事」。</p></div>
+          <div class="card"><div class="ico">📚</div><h3>多形态学习材料</h3><p>输入目标让 AI 生成 HTML 课件，或导入网页、上传文档，还能挑用内置教程。</p></div>
+          <div class="card"><div class="ico">🎙️</div><h3>能听会说</h3><p>浏览器录音转文字即可发问，老师用云端语音合成自然朗读，支持语速与自动播放。</p></div>
+          <div class="card"><div class="ico">🧠</div><h3>三层记忆</h3><p>边聊边提炼你的习惯、教材经验与教学沉淀，讲解越来越贴合本人，也能随时查看与清除。</p></div>
+          <div class="card"><div class="ico">⏳</div><h3>进度自动恢复</h3><p>按「用户 + 教程」保存聊天历史，下次打开同一门课，上下文原样接上，不必从头开始。</p></div>
+          <div class="card"><div class="ico">🫶</div><h3>神经多样性友好</h3><p>体验课尊重点选、手势、发声与口语，不强迫对视或静坐，一次只给一个短提示。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" style="background: #fff; border-block: 1px solid var(--line);">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="eyebrow">如何使用</span>
+          <h2>三步开始你的第一节课</h2>
+          <p>无需注册也能先体验，登录后跨设备保存进度与记忆。</p>
+        </div>
+        <div class="steps">
+          <div class="step"><div class="num"></div><h3>进入课堂、挑内容</h3><p>打开右侧学习区，选一节内置体验课，或生成 / 导入 / 上传你想要学习的内容。</p></div>
+          <div class="step"><div class="num"></div><h3>用文字或语音开聊</h3><p>随时提问、点选或开口表达；老师会根据屏幕上的内容，循循善诱地带你一步步走。</p></div>
+          <div class="step"><div class="num"></div><h3>回来时接着学</h3><p>下次打开同一门课，历史与学到的偏好自动恢复，老师像从没离开过一样继续陪你。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="starter">
+      <div class="wrap">
+        <div class="callout">
+          <div>
+            <span class="tag">内置示范课 · 免费体验</span>
+            <h2>「把想法说出来（语言障碍恢复）」功能性沟通训练课</h2>
+            <p>为自闭症与语言障碍者设计的沟通与说话训练课。可以先由老师或家长带着入门，再放手让孩子跟着 AI 老师自己练，把大量重复的一对一陪练交给系统。</p>
+            <ul>
+              <li>第 1 站 · 我来选择：在喜欢的选项里表达偏好</li>
+              <li>第 2 站 · 我会请求：从单词扩展到「我要 + 物品」</li>
+              <li>第 3 站 · 我的意思很重要：练习说「不要 / 停一下 / 帮帮我」</li>
+              <li>第 4 站 · 我会轮流：在共同活动中使用「轮到我 / 轮到你」</li>
+              <li>第 5 站 · 我来说一说：对目标短语主动发声，接受近似发音</li>
+            </ul>
+          </div>
+          <div class="callout-cta">
+            <div class="mini-stats">
+              <div><b>5</b><small>循序渐进的训练站点</small></div>
+              <div><b>4 种</b><small>被同等尊重的表达方式</small></div>
+            </div>
+            <p style="margin-top:14px;font-size:12px;opacity:.75">这是学习陪练材料，不做诊断，也不替代医生、治疗师或特教老师的专业支持。</p>
+            <a class="btn btn-primary" style="margin-top:18px" href="/study">开始这节课 →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="wrap">
+        <h2>让学习，有一个一直在身边的老师</h2>
+        <p>现在就打开浏览器试试，几秒钟即可开始。</p>
+        <a class="btn btn-primary" href="/study">进入 AI 课堂 →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <div class="foot">
+        <a class="brand" href="/" aria-label="AI老师首页">
+          <span class="brand-mark">A</span>
+          <span class="brand-copy"><strong>AI老师</strong><small>一起学，会更容易</small></span>
+        </a>
+        <span>© 2026 AI Teacher · <a href="/study" style="color:var(--green-dark);font-weight:700">进入课堂</a></span>
+      </div>
+      <p class="disclaimer">AI老师是一款学习陪练工具，内容可能存在不准确之处，不用于医疗、心理诊断或治疗，也不能替代专业人士的建议。高风险主题请以合格专业人员的意见为准。</p>
+    </div>
+  </footer>
+</body>
+</html>

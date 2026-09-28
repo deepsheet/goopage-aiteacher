@@ -3,125 +3,804 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>把想法说出来 · 功能性沟通体验课</title>
+  <title>把想法说出来（语言障碍恢复）· 功能性沟通训练课</title>
   <style>
-    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --warm:#fff7e8; --paper:#fff; --canvas:#f4f6f1; }
+    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --purple-soft:#f1eefb; --warm:#fff7e8; --bad:#b4453a; --paper:#fff; --canvas:#f4f6f1; }
     * { box-sizing:border-box; }
     html { scroll-behavior:smooth; }
     body { margin:0; color:var(--ink); background:var(--canvas); font:16px/1.7 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif; }
     button { font:inherit; color:inherit; }
     button:focus-visible { outline:3px solid rgba(38,112,91,.28); outline-offset:3px; }
-    .hero { padding:clamp(28px,6vw,58px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#1d5848,#357d67); }
-    .hero-inner, main { width:min(920px,100%); margin:auto; }
+    .hero { padding:clamp(26px,6vw,54px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#1d5848,#357d67); }
+    .hero-inner, main { width:min(940px,100%); margin:auto; }
     .eyebrow { display:inline-flex; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.14); font-size:12px; font-weight:800; letter-spacing:.08em; }
-    h1 { margin:12px 0 8px; font-size:clamp(30px,6vw,48px); line-height:1.15; }
-    .hero p { max-width:650px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(15px,2.5vw,18px); }
+    h1 { margin:12px 0 8px; font-size:clamp(28px,5.6vw,44px); line-height:1.15; }
+    .hero p { max-width:680px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(15px,2.4vw,17px); }
     .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
     .principles span { padding:7px 10px; border:1px solid rgba(255,255,255,.22); border-radius:10px; background:rgba(255,255,255,.08); font-size:12px; }
-    main { padding:20px clamp(14px,4vw,30px) 54px; }
-    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 18px; padding:14px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
+    main { padding:18px clamp(14px,4vw,30px) 54px; }
+
+    /* 开场屏：第一次进来先看懂这个产品怎么用 */
+    .start { padding:clamp(20px,4vw,32px); border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .start h2 { margin:6px 0 4px; font-size:clamp(22px,4.4vw,30px); }
+    .start .start-sub { margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .howto { display:grid; gap:10px; margin:18px 0; }
+    .howto div { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:#f2f6f1; }
+    .howto b { flex:0 0 auto; width:24px; height:24px; display:grid; place-items:center; border-radius:8px; color:#fff; background:var(--green); font-size:13px; }
+    .howto p { margin:0; font-size:14px; }
+    .howto small { display:block; color:var(--muted); font-size:12px; }
+    .mode-pick { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+    .mode-pick button { padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#fbfcf9; cursor:pointer; font-weight:800; font-size:13px; }
+    .mode-pick button.active { color:var(--dark); border-color:#8db6a0; background:var(--soft); }
+    .mode-pick button small { display:block; color:var(--muted); font-weight:600; font-size:11px; }
+    .start-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px; }
+    .big-start { padding:14px 22px; border:0; border-radius:14px; color:#fff; background:var(--green); font-weight:900; font-size:17px; cursor:pointer; }
+    .big-start:hover { background:var(--dark); }
+    .demo-button { padding:12px 16px; border:1px dashed #9db8a6; border-radius:14px; background:#fff; color:var(--dark); font-weight:800; cursor:pointer; }
+    .scope-note { margin:14px 0 0; padding:11px 13px; border-radius:12px; background:var(--warm); color:#765c2d; font-size:12px; }
+
+    /* 进度与站点导航 */
+    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 16px; padding:13px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
     .progress-copy { display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; }.progress-copy strong { color:var(--green); }
-    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:25%; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
-    .station-nav { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
-    .station-nav button { min-height:44px; border:1px solid transparent; border-radius:11px; padding:7px 8px; color:var(--muted); background:#f2f4f0; cursor:pointer; font-size:12px; font-weight:700; }
+    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:0; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
+    .station-nav { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:12px; }
+    .station-nav button { min-height:46px; border:1px solid transparent; border-radius:11px; padding:6px 6px; color:var(--muted); background:#f2f4f0; cursor:pointer; font-size:11px; font-weight:800; }
     .station-nav button.active { color:var(--dark); border-color:#bcd4c4; background:var(--soft); }
-    .station { display:none; }.station.active { display:block; animation:rise .2s ease-out; }
+    .station-nav button.done { color:var(--green); }
+
+    .course { display:none; }.course.active { display:block; animation:rise .2s ease-out; }
     .lesson-card, .practice-card { border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
-    .lesson-card { min-height:260px; padding:clamp(24px,5vw,46px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
+    .lesson-card { padding:clamp(22px,5vw,40px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
     .lesson-card::after { content:""; position:absolute; right:-55px; top:-65px; width:210px; height:210px; border:1px solid rgba(38,112,91,.12); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.17),0 0 0 48px rgba(255,255,255,.1); }
-    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }.lesson-card h2 { max-width:620px; margin:8px 0; font-size:clamp(27px,5vw,39px); line-height:1.2; }.lesson-card p { max-width:620px; margin:0 0 18px; color:#53635a; }
-    .speak-button, .wait-button, .next-button { border:0; border-radius:11px; cursor:pointer; font-weight:800; }
+    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }
+    .lesson-card h2 { max-width:640px; margin:8px 0; font-size:clamp(25px,4.6vw,35px); line-height:1.2; }
+    .lesson-card p { max-width:640px; margin:0 0 16px; color:#53635a; }
+    .speak-button, .help-button, .next-button, .retry-button { border:0; border-radius:11px; cursor:pointer; font-weight:800; }
     .speak-button { padding:10px 14px; color:var(--dark); background:#fff; box-shadow:0 4px 16px rgba(38,112,91,.08); }
-    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }.practice-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }.practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }.practice-head h3 { margin:5px 0 0; font-size:clamp(20px,4vw,27px); }.wait-button { padding:9px 12px; color:#657067; background:#f1f3ef; font-size:12px; }
-    .choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:22px 0 16px; }.choice { min-height:126px; border:1px solid var(--line); border-radius:18px; display:grid; place-items:center; align-content:center; gap:4px; background:#fbfcf9; cursor:pointer; }.choice:hover,.choice.selected { border-color:#8db6a0; background:var(--soft); transform:translateY(-2px); }.choice .emoji { font-size:32px; }.choice strong { font-size:16px; }.choice small { color:#879088; font-size:11px; }
-    .word-builder { margin:20px 0 4px; padding:15px; border-radius:15px; background:#f1eefb; }.sentence { min-height:48px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:10px; }.sentence span { padding:8px 12px; border-radius:9px; color:#514771; background:#fff; font-weight:800; }.word-buttons { display:flex; flex-wrap:wrap; gap:8px; }.word-buttons button { border:1px solid #d7d0ed; border-radius:10px; padding:8px 12px; color:#514771; background:#fff; cursor:pointer; font-weight:700; }
-    .coach { display:flex; gap:10px; align-items:flex-start; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }.coach strong { flex:0 0 auto; }.lesson-actions { display:flex; justify-content:flex-end; margin-top:16px; }.next-button { padding:11px 18px; color:#fff; background:var(--green); }.next-button:hover { background:var(--dark); }
-    .feedback { min-height:28px; margin:10px 0 0; color:var(--green); font-weight:800; text-align:center; }
-    .complete { text-align:center; padding:35px 20px; }.complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }.complete h2 { margin:15px 0 5px; }.complete p { color:var(--muted); }
+    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }
+    .practice-head { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; }
+    .practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }
+    .practice-head h3 { margin:5px 0 0; font-size:clamp(19px,4vw,25px); }
+    .target-line { margin:12px 0 0; padding:9px 12px; display:inline-block; border-radius:11px; color:#3c3358; background:var(--purple-soft); font-size:15px; font-weight:800; }
+    .help-buttons { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .help-button { padding:9px 12px; color:#514771; background:#f4f2fb; border:1px solid #ded7f0; font-size:12px; }
+    .help-button:hover { background:var(--purple-soft); }
+
+    /* 等待窗口与提示阶梯 */
+    .ladder { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0 4px; padding:11px 13px; border-radius:14px; background:#f1f3ef; font-size:12px; }
+    .ladder .dots { display:flex; gap:5px; }
+    .ladder .dots i { width:9px; height:9px; border-radius:50%; background:#cdd6cd; }
+    .ladder .dots i.on { background:var(--green); }
+    .ladder .wait { margin-left:auto; padding:7px 11px; border:1px solid var(--line); border-radius:10px; background:#fff; color:#657067; font-weight:700; font-size:12px; cursor:pointer; }
+    .ladder .level { color:var(--muted); }
+
+    .choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:20px 0 12px; }
+    .choice { min-height:120px; border:1px solid var(--line); border-radius:18px; display:grid; place-items:center; align-content:center; gap:4px; background:#fbfcf9; cursor:pointer; }
+    .choice:hover,.choice.selected { border-color:#8db6a0; background:var(--soft); transform:translateY(-2px); }
+    .choice.lit { border-color:#c3b8e6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.14); }
+    .choice.spent { opacity:.4; }
+    .choice .emoji { font-size:32px; }.choice strong { font-size:16px; }.choice small { color:#879088; font-size:11px; }
+    .choice .initial { min-height:15px; color:var(--purple); font-size:12px; font-weight:900; letter-spacing:.08em; }
+
+    .builder { margin:18px 0 4px; padding:15px; border-radius:15px; background:var(--purple-soft); }
+    .sentence { min-height:48px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:10px; }
+    .sentence span { padding:8px 12px; border-radius:9px; color:#514771; background:#fff; font-weight:800; }
+    .sentence em { color:#8b86a3; font-size:13px; }
+    .word-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .word-row button { border:1px solid #d7d0ed; border-radius:10px; padding:8px 12px; color:#514771; background:#fff; cursor:pointer; font-weight:700; }
+    .word-row button.lit { box-shadow:0 0 0 3px rgba(102,87,168,.18); border-color:#a99cd6; }
+    .word-row .group-label { flex:1 1 100%; color:#8b86a3; font-size:11px; font-weight:800; letter-spacing:.06em; }
+
+    .reward { margin:14px 0 0; padding:13px 15px; border-radius:14px; background:var(--soft); color:var(--dark); font-weight:800; }
+    .reward[hidden] { display:none; }
+    .feedback { min-height:26px; margin:10px 0 0; color:var(--green); font-weight:800; text-align:center; }
+    .lesson-actions { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-top:16px; }
+    .retry-button { padding:10px 14px; color:#657067; background:#f1f3ef; font-size:12px; }
+    .next-button { padding:11px 18px; color:#fff; background:var(--green); }
+    .next-button:hover { background:var(--dark); }
+    .next-button[disabled] { opacity:.4; cursor:not-allowed; }
+    .coach { display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }
+    .coach strong { flex:0 0 auto; }
+    body[data-mode="solo"] .coach { display:none; }
+
+    .complete { display:none; text-align:center; padding:32px 20px; border:1px solid var(--line); border-radius:24px; background:var(--paper); }
+    .complete.active { display:block; animation:rise .2s ease-out; }
+    .complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }
+    .complete h2 { margin:15px 0 5px; }
+    .complete p { color:var(--muted); }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:18px 0; text-align:left; }
+    .stat-grid div { padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:#fbfcf9; font-size:12px; }
+    .stat-grid b { display:block; color:var(--green); font-size:16px; }
+    .complete-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
     @keyframes rise { from { opacity:0; transform:translateY(6px); } }
-    @media(max-width:620px){ .station-nav { grid-template-columns:repeat(2,1fr); }.choices { grid-template-columns:1fr; }.choice { min-height:90px; grid-template-columns:auto 1fr; justify-items:start; padding:12px 18px; }.choice small { grid-column:2; }.practice-head { flex-direction:column; }.wait-button { align-self:flex-end; } }
+    @media(max-width:640px){ .station-nav { grid-template-columns:repeat(3,1fr); }.choices { grid-template-columns:1fr; }.choice { min-height:88px; grid-template-columns:auto 1fr; justify-items:start; padding:12px 16px; }.choice small { grid-column:2; }.practice-head { flex-direction:column; }.help-buttons { justify-content:flex-start; } }
     @media(prefers-reduced-motion:reduce){ * { animation:none!important; transition:none!important; } }
   </style>
 </head>
-<body>
+<body data-mode="guided">
   <header class="hero">
     <div class="hero-inner">
-      <span class="eyebrow">体验课程 · 约 8 分钟</span>
-      <h1>把想法说出来</h1>
-      <p>从选择喜欢的东西开始，练习请求、拒绝、求助和轮流。点选、手势、图片、发声和口语，都是有效的沟通。</p>
-      <div class="principles"><span>不强迫对视</span><span>一次一个短提示</span><span>留出至少 5 秒</span><span>先回应意图</span></div>
+      <span class="eyebrow">康复训练体验课 · 约 12 分钟</span>
+      <h1>把想法说出来（语言障碍恢复）</h1>
+      <p>面向自闭症与语言障碍者的功能性沟通训练。从选择喜欢的东西开始，练请求、拒绝、求助、轮流，最后练开口说。点选、指一指、手势、发声和口语，都算有效表达。</p>
+      <div class="principles"><span>不强迫对视</span><span>一次一个短请求</span><span>先等 5 秒</span><span>提示由少到多</span><span>接受近似发音</span></div>
     </div>
   </header>
   <main>
-    <section class="progress-card" aria-label="课程进度">
-      <div class="progress-copy"><span>课程进度</span><strong id="progressText">1 / 4</strong></div>
+    <!-- 开场屏：第一次使用本产品的用户，看完这一屏就知道左边聊天区和右边课件是怎么联动的 -->
+    <section class="start" id="startScreen">
+      <span class="step">第一次来 · 先看这里</span>
+      <h2>这个课怎么用</h2>
+      <p class="start-sub">右边是课本，左边是 AI 老师。下面的三件事都会在这节课里真的发生一次。</p>
+      <div class="howto">
+        <div><b>1</b><p>在右边点一点，或者说一说<small>你每一次选择、每一句拼出来的话，都会自动告诉左边的 AI 老师。</small></p></div>
+        <div><b>2</b><p>老师会回应你，也会读给你听<small>老师说出的句子会同时变成语音；点课卡上的「听老师说」可以再来一遍。</small></p></div>
+        <div><b>3</b><p>老师还能直接翻你的课本<small>老师说一句「我们跳到第 2 站」，右边这一屏就会自己跳过去。</small></p></div>
+      </div>
+      <span class="step">谁来带这节课？</span>
+      <div class="mode-pick" id="modePick">
+        <button type="button" class="active" data-mode="guided">老师或家长带着练<small>适合刚开始、需要大人帮一把的孩子</small></button>
+        <button type="button" data-mode="solo">我自己练<small>孩子已经熟悉流程，交给 AI 老师</small></button>
+      </div>
+      <div class="start-actions">
+        <button type="button" class="big-start" id="startButton">开始第一站 →</button>
+        <button type="button" class="demo-button" id="demoButton">试一试：让老师带我翻到下一站</button>
+      </div>
+      <p class="scope-note">这是一套沟通与语言的陪练材料，用来给日常训练提供更多练习机会；它不做诊断，也不替代医生、治疗师或特教老师的专业支持。</p>
+    </section>
+
+    <section class="progress-card" id="progressCard" hidden aria-label="课程进度">
+      <div class="progress-copy"><span>训练进度</span><strong id="progressText">1 / 5</strong></div>
       <div class="track"><span id="progressFill"></span></div>
       <nav class="station-nav" id="stationNav">
-        <button class="active" data-step="0">1 你想玩什么？</button><button data-step="1">2 把愿望变成一句话</button><button data-step="2">3 说“不”也很有用</button><button data-step="3">4 轮到谁了？</button>
+        <button type="button" class="active" data-goto="1">1 我来选择</button><button type="button" data-goto="2">2 我会请求</button><button type="button" data-goto="3">3 我会说不</button><button type="button" data-goto="4">4 我会轮流</button><button type="button" data-goto="5">5 我来说一说</button>
       </nav>
     </section>
 
-    <section class="station active" data-station="0">
-      <div class="lesson-card"><span class="step">第 1 站 · 我来选择</span><h2>你想玩什么？</h2><p>点一个你喜欢的。指一指、点一下，或者说出来，都可以。</p><button class="speak-button" data-speak="你想玩什么？点一个你喜欢的。">🔊 听老师说</button></div>
-      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>你想要哪一个？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="选择了泡泡" data-spoken="泡泡"><span class="emoji">🫧</span><strong>泡泡</strong><small>点一下告诉老师</small></button><button class="choice" data-action="选择了小车" data-spoken="小车"><span class="emoji">🚗</span><strong>小车</strong><small>点一下告诉老师</small></button><button class="choice" data-action="选择了音乐" data-spoken="音乐"><span class="emoji">🎵</span><strong>音乐</strong><small>点一下告诉老师</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>把选择权交给孩子。选择后立刻兑现或模拟兑现，不要求重复发音。</span></div><div class="lesson-actions"><button class="next-button" data-next="1">下一站 →</button></div></div>
+    <!-- 第 1 站 · 选择 -->
+    <section class="course" data-station="1">
+      <div class="lesson-card">
+        <span class="step">第 1 站 · 我来选择</span>
+        <h2>你想玩什么？</h2>
+        <p>点一个你喜欢的。指一指、点一下，或者说出来，都可以。这一站要选三回。</p>
+        <button type="button" class="speak-button" data-speak="你想玩什么？点一个你喜欢的。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s1prompt">你想要哪一个？</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="ladder"><span class="dots"><i></i><i></i><i></i></span><span class="level">提示阶梯：等待 · 指认 · 老师示范</span><button type="button" class="wait" data-wait>留出 5 秒</button></div>
+        <div class="choices">
+          <button type="button" class="choice" data-pick="泡泡" data-spoken="泡泡"><span class="emoji">🫧</span><strong>泡泡</strong><small>点一下告诉老师</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="小车" data-spoken="小车"><span class="emoji">🚗</span><strong>小车</strong><small>点一下告诉老师</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="音乐" data-spoken="音乐"><span class="emoji">🎵</span><strong>音乐</strong><small>点一下告诉老师</small><span class="initial"></span></button>
+        </div>
+        <div class="reward" data-reward hidden></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>把选择权真的交出去：孩子点完就兑现或演一下，不要求他重复发音。能点，就已经是在沟通了。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一站再练一遍</button><button type="button" class="next-button" data-next="2" disabled>下一站 →</button></div>
+      </div>
     </section>
 
-    <section class="station" data-station="1">
-      <div class="lesson-card"><span class="step">第 2 站 · 我会请求</span><h2>把愿望变成一句话</h2><p>按顺序点词卡，拼出你的话。只说“泡泡”也完全可以。</p><button class="speak-button" data-speak="你可以说，我要泡泡。">🔊 听老师说</button></div>
-      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>拼出“我要泡泡”</h3></div><button class="wait-button">留出 5 秒</button></div><div class="word-builder"><div class="sentence" id="sentence"><em>点下面的词，拼成一句话</em></div><div class="word-buttons"><button data-word="我">我</button><button data-word="要">要</button><button data-word="泡泡">泡泡</button><button data-clear>重新拼</button></div></div><div class="choices"><button class="choice" data-action="表达了我要泡泡" data-spoken="我要泡泡"><span class="emoji">🫧</span><strong>我要泡泡</strong><small>完整表达</small></button><button class="choice" data-action="表达了再来一次" data-spoken="再来一次"><span class="emoji">🔁</span><strong>再来一次</strong><small>请求重复</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>先示范“要 + 泡泡”，等待，再把孩子的表达自然扩展成“我要泡泡”。</span></div><div class="lesson-actions"><button class="next-button" data-next="2">下一站 →</button></div></div>
+    <!-- 第 2 站 · 请求 -->
+    <section class="course" data-station="2">
+      <div class="lesson-card">
+        <span class="step">第 2 站 · 我会请求</span>
+        <h2>把愿望变成一句话</h2>
+        <p>按顺序点词卡，拼出「我要 + 一样东西」。只说得出一个词，也完全可以。</p>
+        <button type="button" class="speak-button" data-speak="你可以说：我要泡泡。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s2prompt">拼出「我要泡泡」</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button><button type="button" class="help-button" data-explain>🧾 请老师示范</button></div></div>
+        <div class="ladder"><span class="dots"><i></i><i></i><i></i></span><span class="level">提示阶梯：等待 · 亮首字 · 老师示范</span><button type="button" class="wait" data-wait>留出 5 秒</button></div>
+        <div class="builder">
+          <div class="sentence" id="sentence"><em>点下面的词，拼成一句话</em></div>
+          <div class="word-row">
+            <span class="group-label">先说谁</span>
+            <button type="button" data-word="我">我</button><button type="button" data-word="要">要</button>
+            <span class="group-label">再说想要什么</span>
+            <button type="button" data-word="泡泡">泡泡</button><button type="button" data-word="小车">小车</button><button type="button" data-word="音乐">音乐</button>
+            <button type="button" data-clear>重新拼</button>
+          </div>
+        </div>
+        <div class="reward" data-reward hidden></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>先示范半个「要 ——」，等他自己接上；他只说了一个词，你就替他补成整句再兑现，这叫自然扩展。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一站再练一遍</button><button type="button" class="next-button" data-next="3" disabled>下一站 →</button></div>
+      </div>
     </section>
 
-    <section class="station" data-station="2">
-      <div class="lesson-card"><span class="step">第 3 站 · 我的意思很重要</span><h2>说“不”也很有用</h2><p>选一句最符合你现在想法的话。每一种选择都被尊重。</p><button class="speak-button" data-speak="你可以告诉我，不要，停一下，或者帮帮我。">🔊 听老师说</button></div>
-      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>你现在想说什么？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="表达了不要" data-spoken="不要"><span class="emoji">✋</span><strong>不要</strong><small>拒绝也很重要</small></button><button class="choice" data-action="表达了停一下" data-spoken="停一下"><span class="emoji">⏸️</span><strong>停一下</strong><small>请求暂停</small></button><button class="choice" data-action="表达了帮帮我" data-spoken="帮帮我"><span class="emoji">🤝</span><strong>帮帮我</strong><small>主动求助</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>孩子拒绝后请暂停活动。让“不”产生真实效果，沟通才值得继续。</span></div><div class="lesson-actions"><button class="next-button" data-next="3">下一站 →</button></div></div>
+    <!-- 第 3 站 · 拒绝 / 求助 -->
+    <section class="course" data-station="3">
+      <div class="lesson-card">
+        <span class="step">第 3 站 · 我的意思很重要</span>
+        <h2>说「不」也很有用</h2>
+        <p>老师拿出一个很大声的鼓。你可以说不要，也可以说停一下、帮帮我、还要。每一种都会被认真对待。</p>
+        <button type="button" class="speak-button" data-speak="你可以告诉我：不要、停一下、帮帮我。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s3prompt">你现在想说什么？</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="ladder"><span class="dots"><i></i><i></i><i></i></span><span class="level">提示阶梯：等待 · 指认 · 老师示范</span><button type="button" class="wait" data-wait>留出 5 秒</button></div>
+        <div class="choices">
+          <button type="button" class="choice" data-pick="不要" data-spoken="不要"><span class="emoji">✋</span><strong>不要</strong><small>拒绝也是表达</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="停一下" data-spoken="停一下"><span class="emoji">⏸️</span><strong>停一下</strong><small>请求暂停</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="帮帮我" data-spoken="帮帮我"><span class="emoji">🤝</span><strong>帮帮我</strong><small>主动求助</small><span class="initial"></span></button>
+        </div>
+        <div class="reward" data-reward hidden></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>孩子说「不要」，请真的停下来。让「不」有实际效果，他才愿意继续开口。别把拒绝当成不配合。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一站再练一遍</button><button type="button" class="next-button" data-next="4" disabled>下一站 →</button></div>
+      </div>
     </section>
 
-    <section class="station" data-station="3">
-      <div class="lesson-card"><span class="step">第 4 站 · 一起玩</span><h2>轮到谁了？</h2><p>看一看轮到谁，再点对应的话。轮流只做 2—3 回合也可以。</p><button class="speak-button" data-speak="刚才老师吹了泡泡，现在轮到谁？">🔊 听老师说</button></div>
-      <div class="practice-card"><div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>刚才老师玩了，现在轮到谁？</h3></div><button class="wait-button">留出 5 秒</button></div><div class="choices"><button class="choice" data-action="表达了轮到我" data-spoken="轮到我"><span class="emoji">🙋</span><strong>轮到我</strong><small>我来玩</small></button><button class="choice" data-action="表达了轮到你" data-spoken="轮到你"><span class="emoji">🫵</span><strong>轮到你</strong><small>邀请别人</small></button><button class="choice" data-action="表达了结束了" data-spoken="结束了"><span class="emoji">✅</span><strong>结束了</strong><small>结束也是选择</small></button></div><p class="feedback"></p><div class="coach"><strong>成人提示</strong><span>轮流只做 2—3 回合即可，在孩子仍有兴趣时结束。</span></div><div class="lesson-actions"><button class="next-button" data-finish>完成课程 ✓</button></div></div>
+    <!-- 第 4 站 · 轮流 -->
+    <section class="course" data-station="4">
+      <div class="lesson-card">
+        <span class="step">第 4 站 · 一起玩</span>
+        <h2>轮到谁了？</h2>
+        <p>吹泡泡要有来有往。看一看现在轮到谁，再点对应的那句。两三个回合就够了。</p>
+        <button type="button" class="speak-button" data-speak="刚才老师吹了泡泡，现在轮到谁？">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s4prompt">刚才老师吹了泡泡，现在轮到谁？</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="ladder"><span class="dots"><i></i><i></i><i></i></span><span class="level">提示阶梯：等待 · 指认 · 老师示范</span><button type="button" class="wait" data-wait>留出 5 秒</button></div>
+        <div class="choices">
+          <button type="button" class="choice" data-pick="轮到我" data-spoken="轮到我"><span class="emoji">🙋</span><strong>轮到我</strong><small>我来玩</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="轮到你" data-spoken="轮到你"><span class="emoji">🫵</span><strong>轮到你</strong><small>邀请别人</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-pick="还要吗" data-spoken="还要吗"><span class="emoji">🔁</span><strong>还要吗</strong><small>问对方</small><span class="initial"></span></button>
+        </div>
+        <div class="reward" data-reward hidden></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>轮流只做两三回合，趁孩子还有兴趣时收尾，比硬撑到厌烦更好。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一站再练一遍</button><button type="button" class="next-button" data-next="5" disabled>下一站 →</button></div>
+      </div>
     </section>
-    <section class="complete" id="complete" hidden><div class="badge">✓</div><h2>今天的练习完成了</h2><p>你已经练习了选择、请求、拒绝和轮流。每一种表达方式都算数。</p><button class="next-button" data-restart>再练一次</button></section>
+
+    <!-- 第 5 站 · 口语 -->
+    <section class="course" data-station="5">
+      <div class="lesson-card">
+        <span class="step">第 5 站 · 我来说一说</span>
+        <h2>把这句话讲给老师听</h2>
+        <p>先听老师读一遍，再点左下角的麦克风自己说。说不清楚也没关系，老师说给你听正确的说法。</p>
+        <button type="button" class="speak-button" data-speak="我要泡泡。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s5prompt">挑一句，说给老师听</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button><button type="button" class="help-button" data-explain>🧾 请老师示范</button></div></div>
+        <div class="ladder"><span class="dots"><i></i><i></i><i></i></span><span class="level">提示阶梯：等待 · 亮首字 · 老师示范</span><button type="button" class="wait" data-wait>留出 5 秒</button></div>
+        <div class="choices">
+          <button type="button" class="choice" data-say="我要泡泡"><span class="emoji">🫧</span><strong>我要泡泡</strong><small>说完整一句</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-say="再来一次"><span class="emoji">🔁</span><strong>再来一次</strong><small>请老师再来</small><span class="initial"></span></button>
+          <button type="button" class="choice" data-say="帮帮我"><span class="emoji">🤝</span><strong>帮帮我</strong><small>请老师帮忙</small><span class="initial"></span></button>
+        </div>
+        <div class="word-row" style="margin-top:6px">
+          <button type="button" data-spoke>我说完了，请老师听</button>
+          <button type="button" data-point>我说不出来，先点给老师看</button>
+        </div>
+        <div class="reward" data-reward hidden></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>这一站才要求开口。近似音也算成功，先强化意图再塑型；孩子不肯说就退回点选，今天不算失败。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一站再练一遍</button><button type="button" class="next-button" data-finish disabled>完成训练 ✓</button></div>
+      </div>
+    </section>
+
+    <section class="complete" id="complete">
+      <div class="badge">✓</div>
+      <h2>今天的训练练完了</h2>
+      <p>下面的数字只存在这一页里，刷新就清零。把它们交给老师，他会告诉你下一步该练什么。</p>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="complete-actions">
+        <button type="button" class="help-button" data-review>🧾 请老师总结今天</button>
+        <button type="button" class="help-button" data-next-plan>➜ 问老师下一步怎么练</button>
+        <button type="button" class="next-button" data-restart>再练一次</button>
+      </div>
+    </section>
   </main>
   <script>
     (() => {
-      let step = 0;
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+      const TOTAL = 5;
+      const TITLES = { 1: '我来选择', 2: '我会请求', 3: '我会说不', 4: '我会轮流', 5: '我来说一说' };
+      // 每站的试次要求：need 是要完成的回合数，独立答对才算过。
+      const SPEC = {
+        1: { need: 3, kind: 'pick' },
+        2: { need: 2, kind: 'build' },
+        3: { need: 2, kind: 'pick' },
+        4: { need: 2, kind: 'pick' },
+        5: { need: 2, kind: 'say' },
+      };
+      // 提示阶梯的本地时间预算（毫秒）：先等，再指认，最后才请老师出声。
+      const L1_MS = 5000, L2_MS = 4000;
+
+      let station = 0;             // 0 = 还没开始
       const words = [];
-      const $ = (selector, root = document) => root.querySelector(selector);
-      const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-      function notify(action, spoken = '', respond = false) { parent.postMessage({ type:'aiteacher-learning-action', action, spoken, respond }, '*'); }
-      function go(index) {
-        step = Math.max(0, Math.min(3, Number(index) || 0));
-        $$('[data-station]').forEach((node, i) => node.classList.toggle('active', i === step));
-        $$('#stationNav button').forEach((node, i) => node.classList.toggle('active', i === step));
-        $('#progressText').textContent = `${step + 1} / 4`;
-        $('#progressFill').style.width = `${(step + 1) * 25}%`;
-        $('#complete').hidden = true;
-        window.scrollTo({ top:0, behavior:'smooth' });
-        notify(`进入第 ${step + 1} 站`);
+      const progress = {};         // 每站 {rounds, independent, level, latency[]}
+      const built = new Set();     // 第 2 站已经拼出的物品
+      const said = new Set();      // 第 5 站已经说过的句子
+      const spentPicks = new Set();// 第 1 站已选过的选项（避免同一轮重复点）
+      let level = 0;               // 当前回合已升到第几级提示
+      const ITEMS = ['泡泡', '小车', '音乐'];
+      let ladderTimer = null;
+      let trialStartAt = 0;
+      let lastCmd = '';            // 指令幂等：同一条指令重复到达不叠加副作用
+
+      function notify(action, spoken = '', respond = false) {
+        parent.postMessage({ type: 'aiteacher-learning-action', action, spoken, respond }, '*');
       }
-      $('#stationNav').addEventListener('click', e => { const button = e.target.closest('[data-step]'); if (button) go(button.dataset.step); });
-      document.addEventListener('click', e => {
-        const choice = e.target.closest('[data-action]');
-        if (choice) {
-          $$('.choice', choice.closest('.practice-card')).forEach(node => node.classList.remove('selected'));
-          choice.classList.add('selected');
-          $('.feedback', choice.closest('.practice-card')).textContent = `你表达了：“${choice.dataset.spoken}”`;
-          notify(choice.dataset.action, choice.dataset.spoken, true);
-        }
-        const next = e.target.closest('[data-next]'); if (next) go(next.dataset.next);
-        const speak = e.target.closest('[data-speak]'); if (speak) notify('点击了听老师说', speak.dataset.speak);
-        const wait = e.target.closest('.wait-button');
+
+      function specOf(index) { return SPEC[index] || SPEC[1]; }
+
+      // 拼句与点词顺序无关：有「要」+ 一样东西就算表达成功，补上「我」算完整句。
+      function analyzeBuild() {
+        const item = words.find(value => ITEMS.includes(value));
+        if (!item || !words.includes('要')) return { item: '', phrase: '' };
+        return { item, phrase: `${words.includes('我') ? '我要' : '要'}${item}` };
+      }
+
+      function progOf(index) {
+        if (!progress[index]) progress[index] = { rounds: 0, independent: 0, level: 0, latency: [] };
+        return progress[index];
+      }
+      function stationEl(index) { return $(`.course[data-station="${index}"]`); }
+      function nowMs() { return Date.now(); }
+
+      function setLadder(levelNow) {
+        level = levelNow;
+        const host = stationEl(station);
+        if (!host) return;
+        $$('.ladder .dots i', host).forEach((dot, i) => dot.classList.toggle('on', i < levelNow));
+        progOf(station).level = Math.max(progOf(station).level, levelNow);
+      }
+
+      function clearLadder() {
+        if (ladderTimer) { window.clearTimeout(ladderTimer); ladderTimer = null; }
+      }
+
+      // 阶梯由课件本地推进：不依赖模型是否真的发出 [[hint:]]。
+      function armLadder() {
+        clearLadder();
+        setLadder(0);
+        lastCmd = '';   // 新一轮开始了，同一条指令可以再生效一次
+        trialStartAt = nowMs();
+        const host = stationEl(station);
+        const wait = host ? $('.wait', host) : null;
         if (wait && !wait.dataset.busy) {
-          wait.dataset.busy = '1'; let seconds = 5;
-          const timer = setInterval(() => { seconds -= 1; wait.textContent = seconds > 0 ? `安静等待 ${seconds}` : '谢谢你愿意等'; if (!seconds) { clearInterval(timer); setTimeout(() => { wait.textContent='留出 5 秒'; delete wait.dataset.busy; }, 1000); } }, 1000);
+          let seconds = Math.round(L1_MS / 1000);
+          wait.dataset.busy = '1';
+          wait.textContent = `安静等待 ${seconds}`;
+          const tick = window.setInterval(() => {
+            seconds -= 1;
+            if (seconds > 0) { wait.textContent = `安静等待 ${seconds}`; return; }
+            window.clearInterval(tick);
+            wait.textContent = '谢谢你愿意等';
+            window.setTimeout(() => {
+              delete wait.dataset.busy;
+              wait.textContent = '留出 5 秒';
+            }, 1200);
+          }, 1000);
         }
-        const word = e.target.closest('[data-word]');
-        if (word) { words.push(word.dataset.word); $('#sentence').innerHTML = words.map(value => `<span>${value}</span>`).join(''); notify(`正在拼句子：${words.join('')}`); }
-        if (e.target.closest('[data-clear]')) { words.length = 0; $('#sentence').innerHTML = '<em>点下面的词，拼成一句话</em>'; notify('重新拼句子'); }
-        if (e.target.closest('[data-finish]')) { $$('[data-station]').forEach(node => node.classList.remove('active')); $('#complete').hidden=false; notify('完成了内置体验课程','今天的练习完成了'); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
-        if (e.target.closest('[data-restart]')) go(0);
+        ladderTimer = window.setTimeout(stepLadderTo2, L1_MS);
+      }
+
+      function stepLadderTo2() {
+        if (station === 0) return;
+        setLadder(2);
+        lightHint(currentTarget(), true);
+        ladderTimer = window.setTimeout(stepLadderTo3, L2_MS);
+      }
+
+      function stepLadderTo3() {
+        if (station === 0) return;
+        setLadder(3);
+        clearLadder();
+        // 到顶才召唤老师：让老师出声示范，而不是继续在这里倒计时。
+        notify(`第${station}站「${TITLES[station]}」等了 ${Math.round((L1_MS + L2_MS) / 1000)} 秒还没有表达，请老师示范一次`, '', true);
+        showFeedback('老师在等你，也可以让老师先示范一次。');
+      }
+
+      // 当前回合最该被提示的那一个目标（写在页面上可见的词）。
+      function currentTarget() {
+        if (station === 1) {
+          const pending = $$('.choice', stationEl(1)).filter(el => !spentPicks.has(el.dataset.pick));
+          return pending.length ? pending[0].dataset.pick : '';
+        }
+        if (station === 2) {
+          const done = analyzeBuild();
+          if (done.phrase) return '';
+          if (!words.includes('要')) return '要';
+          return ITEMS.find(item => !built.has(item)) || '泡泡';
+        }
+        if (station === 3) return '不要';
+        if (station === 4) return '轮到我';
+        if (station === 5) {
+          const pending = $$('.choice', stationEl(5)).filter(el => !said.has(el.dataset.say));
+          return pending.length ? pending[0].dataset.say : '';
+        }
+        return '';
+      }
+
+      function lightHint(target, announce) {
+        if (!target) return false;
+        const host = stationEl(station) || document.body;
+        const hit = $$('[data-pick],[data-say],[data-word]', host).find(el =>
+          (el.dataset.pick || el.dataset.say || el.dataset.word) === target);
+        if (!hit) return false;
+        $$('.lit', document).forEach(el => el.classList.remove('lit'));
+        hit.classList.add('lit');
+        const initial = $('.initial', hit);
+        if (initial) initial.textContent = `${target[0]}${'·'.repeat(Math.max(target.length - 1, 1))}`;
+        hit.focus({ preventScroll: true });
+        if (announce) notify(`第${station}站给「${target}」亮了首字提示`);
+        return true;
+      }
+
+      function showReward(text) {
+        const host = stationEl(station);
+        if (!host) return;
+        const box = $('[data-reward]', host);
+        box.hidden = false;
+        box.textContent = text;
+      }
+
+      function showFeedback(text) {
+        const host = stationEl(station);
+        if (!host) return;
+        $('.feedback', host).textContent = text;
+      }
+
+      function recordRound(index, independent) {
+        const p = progOf(index);
+        p.rounds += 1;
+        if (independent) p.independent += 1;
+        if (trialStartAt) p.latency.push(Math.round((nowMs() - trialStartAt) / 1000));
+      }
+
+      function stationDone(index) {
+        return progOf(index).rounds >= specOf(index).need;
+      }
+
+      function refreshGate() {
+        const host = stationEl(station);
+        if (!host) return;
+        const button = $('.next-button', host) || $('[data-finish]', host);
+        if (button) button.disabled = !stationDone(station);
+        const nav = $(`.station-nav button[data-goto="${station}"]`);
+        if (nav && stationDone(station)) nav.classList.add('done');
+      }
+
+      // 聊天页通过注入的桥接脚本调用这里：老师可以翻页、要提示、公布目标。
+      window.__aiteacherCmd = function ({ action, value }) {
+        try {
+          const key = `${action}:${String(value || '').trim()}`;
+          if (key === lastCmd) return true;   // 幂等：重复到达不再叠加
+          lastCmd = key;
+          if (action === 'step') {
+            const target = parseInt(value, 10);
+            if (!(target >= 1 && target <= TOTAL)) return false;
+            go(target, true);
+            return true;
+          }
+          const word = String(value || '').trim();
+          if (!word) return false;
+          if (action === 'hint') {
+            // 目标属于别的站就先跳过去，并在页面上看得出发生了什么。
+            let found = lightHint(word);
+            if (!found) {
+              for (let i = 1; i <= TOTAL; i += 1) {
+                if (i === station) continue;
+                const host = stationEl(i);
+                if ($$('[data-pick],[data-say],[data-word]', host).some(el =>
+                  (el.dataset.pick || el.dataset.say || el.dataset.word) === word)) {
+                  go(i, false);
+                  found = lightHint(word);
+                  break;
+                }
+              }
+            }
+            if (!found) return false;
+            notify(`老师在第${station}站给「${word}」提示`);
+            return true;
+          }
+          if (action === 'reveal') {
+            const target = $$('.choice', stationEl(5)).find(el => el.dataset.say === word);
+            if (target) {
+              target.classList.add('lit');
+              showReward(`老师示范：${word}`);
+              notify(`老师在第5站示范了「${word}」`);
+              return true;
+            }
+            if (station === 2 && /^(我|要)$/.test(word)) {
+              const card = $$('[data-word]', stationEl(2)).find(el => el.dataset.word === word);
+              if (card) { card.classList.add('lit'); renderSentence(); notify(`老师示范了「${word}」`); return true; }
+            }
+            return false;
+          }
+          return false;
+        } catch (_) {
+          return false;
+        }
+      };
+
+      function renderSentence() {
+        const box = $('#sentence');
+        box.innerHTML = words.length
+          ? words.map(value => `<span>${value}</span>`).join('')
+          : '<em>点下面的词，拼成一句话</em>';
+      }
+
+      function go(index, fromTeacher) {
+        const next = Math.max(1, Math.min(TOTAL, Number(index) || 1));
+        station = next;
+        $$('.course').forEach(node => node.classList.toggle('active', node.dataset.station === String(next)));
+        $$('#stationNav button').forEach(node => node.classList.toggle('active', node.dataset.goto === String(next)));
+        $('#progressText').textContent = `${next} / ${TOTAL}`;
+        $('#progressFill').style.width = `${(next / TOTAL) * 100}%`;
+        $('#complete').classList.remove('active');
+        words.length = 0;
+        renderSentence();
+        setLadder(0);
+        armLadder();
+        refreshGate();
+        if (fromTeacher) showFeedback(`老师把你带到了第 ${next} 站：${TITLES[next]}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        notify(`进入第${next}站：${TITLES[next]}`);
+      }
+
+      function start() {
+        $('#startScreen').style.display = 'none';
+        $('#progressCard').hidden = false;
+        go(1);
+      }
+
+      $('#startButton').addEventListener('click', () => {
+        start();
+        notify('开始了「把想法说出来（语言障碍恢复）」训练，现在在第1站：我来选择', '', true);
       });
+
+      // 演示反向链路：老师只要发 [[step:2]]，这一屏就会真的跳过去。
+      $('#demoButton').addEventListener('click', () => {
+        if ($('#startScreen').style.display !== 'none') start();
+        notify('请求老师把我带到下一站（这是第 3 步演示：老师说跳，课件就跳）', '', true);
+      });
+
+      $('#modePick').addEventListener('click', event => {
+        const button = event.target.closest('[data-mode]');
+        if (!button) return;
+        $$('#modePick button').forEach(node => node.classList.toggle('active', node === button));
+        document.body.dataset.mode = button.dataset.mode;
+        notify(button.dataset.mode === 'solo'
+          ? '切换到「我自己练」：把节奏交给孩子和 AI 老师，不再显示成人提示'
+          : '切换到「老师或家长带着练」：显示每一步的成人提示');
+      });
+
+      document.addEventListener('click', event => {
+        const speak = event.target.closest('[data-speak]');
+        if (speak) notify('点击了听老师说', speak.dataset.speak);
+
+        const wait = event.target.closest('[data-wait]');
+        if (wait) { clearLadder(); armLadder(); notify('重新留出了 5 秒等待时间'); }
+
+        const hint = event.target.closest('[data-hint]');
+        if (hint) {
+          const target = currentTarget();
+          // 本地立刻给效果，不押模型是否真发指令。
+          const shown = lightHint(target, false);
+          setLadder(Math.max(level, 2));
+          if (!shown) showFeedback('这一站已经练完了，可以直接点下一站。');
+          notify(`第${station}站主动要提示（目标：${target || '已完成'}）`, '', true);
+        }
+
+        const explain = event.target.closest('[data-explain]');
+        if (explain) {
+          setLadder(3);
+          clearLadder();
+          notify(`第${station}站请老师示范一次：${currentTarget() || TITLES[station]}`, '', true);
+        }
+
+        const pick = event.target.closest('[data-pick]');
+        if (pick && station > 0) {
+          const host = stationEl(station);
+          $$('.choice', host).forEach(node => node.classList.remove('selected', 'lit'));
+          pick.classList.add('selected');
+          const spoken = pick.dataset.spoken || pick.dataset.pick;
+          const independent = level <= 1;
+          recordRound(station, independent);
+          clearLadder();
+          if (station === 1) {
+            spentPicks.add(pick.dataset.pick);
+            showReward(`你要的是${spoken}——${spoken}来了！这就是沟通成功了。`);
+            const left = SPEC[1].need - progOf(1).rounds;
+            $('#s1prompt').textContent = left > 0 ? `再来一次，还想要哪一个？（还剩 ${left} 轮）` : '三回都选好了';
+            $$('.choice', host).forEach(node => { if (node !== pick) node.classList.add('spent'); });
+            window.setTimeout(() => $$('.choice', host).forEach(node => node.classList.remove('spent')), 1500);
+          } else if (station === 3) {
+            const outcome = {
+              不要: '大鼓收走了。你说「不要」，老师听见了，也照做了。',
+              停一下: '全部停下来了。想继续的时候再说一声。',
+              帮帮我: '老师来帮你了。会开口求助，比什么都重要。',
+            };
+            showReward(outcome[pick.dataset.pick] || `你说的是${spoken}，老师收到了。`);
+          } else {
+            const outcome = {
+              轮到我: '轮到你了，你来吹第一个泡泡。',
+              轮到你: '轮到老师了——老师吹好了，现在看你。',
+              还要吗: '你问了「还要吗」，这就是在跟人说话。',
+            };
+            showReward(outcome[pick.dataset.pick] || `你说的是${spoken}，老师收到了。`);
+          }
+          $('.feedback', host).textContent = `你表达了：「${spoken}」（第 ${progOf(station).rounds} 回合）`;
+          notify(`第${station}站第${progOf(station).rounds}回合表达了「${spoken}」${independent ? '（独立）' : `（第 ${level} 级提示后）`}`, spoken, independent ? false : true);
+          refreshGate();
+          if (stationDone(station)) {
+            notify(`完成第${station}站：${TITLES[station]}，共 ${progOf(station).rounds} 回合，独立 ${progOf(station).independent} 次`, '', true);
+          } else {
+            window.setTimeout(() => { armLadder(); }, 1200);
+          }
+          return;
+        }
+
+        const say = event.target.closest('[data-say]');
+        if (say && station === 5) {
+          const host = stationEl(5);
+          $$('.choice', host).forEach(node => node.classList.remove('selected', 'lit'));
+          say.classList.add('selected');
+          setTarget5(say.dataset.say);
+          showFeedback(`这一句是「${say.dataset.say}」，听老师读完自己试一次。`);
+          notify('第5站挑好了要说的句子', say.dataset.say);
+          return;
+        }
+
+        if (event.target.closest('[data-spoke]')) {
+          clearLadder();
+          const target = currentTarget5();
+          if (!said.has(target)) { said.add(target); recordRound(5, level <= 1); }
+          showReward(`老师说：你把「${target}」说出来了，老师听懂了。`);
+          notify(`第5站我说了一句「${target}」，请老师听一听我说得对不对，再示范一遍正确的说法`, target, true);
+          refreshGate();
+          if (stationDone(5)) notify(`完成第5站：我来说一说，共 ${progOf(5).rounds} 回合，独立 ${progOf(5).independent} 次`, '', true);
+          else window.setTimeout(() => armLadder(), 1200);
+          return;
+        }
+
+        if (event.target.closest('[data-point]')) {
+          const target = currentTarget5();
+          if (!said.has(target)) { said.add(target); recordRound(5, false); }
+          showReward(`你指给老师看，也算说了。${target}`);
+          notify(`第5站用点选表达了「${target}」，今天先用手指也可以，下次再试着出声`, target, true);
+          refreshGate();
+          return;
+        }
+
+        const word = event.target.closest('[data-word]');
+        if (word && station === 2) {
+          const value = word.dataset.word;
+          // 同一个词不重复上卡；物品卡也只留一张
+          if (value === '我' || value === '要') {
+            if (!words.includes(value) && words.length < 3) words.push(value);
+          } else if (!words.some(item => ITEMS.includes(item))) {
+            if (words.length < 3) words.push(value);
+          }
+          renderSentence();
+          $$('.lit', stationEl(2)).forEach(el => el.classList.remove('lit'));
+          notify(`第2站正在拼句子：${words.join('')}`);
+          const built_ = analyzeBuild();
+          if (built_.phrase) {
+            const item = built_.item;
+            if (!built.has(item)) {
+              built.add(item);
+              recordRound(2, level <= 1);
+              clearLadder();
+              showReward(`${built_.phrase}——${item}来了。整句话是有用的。`);
+              $('.feedback', stationEl(2)).textContent = `拼成了：${built_.phrase}（第 ${progOf(2).rounds} 回合）`;
+              $('#s2prompt').textContent = stationDone(2) ? '两句话都拼好了' : '再换一样东西拼一句：我要……';
+              notify(`第2站第${progOf(2).rounds}回合拼出「${built_.phrase}」${level <= 1 ? '（独立）' : `（第 ${level} 级提示后）`}`, built_.phrase, level <= 1 ? false : true);
+            }
+            refreshGate();
+            if (stationDone(2)) notify(`完成第2站：我会请求，共 ${progOf(2).rounds} 回合，独立 ${progOf(2).independent} 次`, '', true);
+            else window.setTimeout(() => { words.length = 0; renderSentence(); armLadder(); }, 1500);
+          } else if (words.length >= 3) {
+            // 点了三个但还不成句：先给具体的下一步，不判错。
+            showFeedback('还差一点：先点「要」，再点你想要的东西。');
+          }
+          return;
+        }
+
+        if (event.target.closest('[data-clear]')) {
+          words.length = 0;
+          renderSentence();
+          notify('第2站重新拼句子');
+          armLadder();
+          return;
+        }
+
+        const next = event.target.closest('[data-next]');
+        if (next) go(next.dataset.next);
+
+        if (event.target.closest('[data-finish]')) finish();
+
+        const replay = event.target.closest('[data-replay]');
+        if (replay) {
+          const p = progOf(station);
+          p.rounds = 0;
+          refreshGate();
+          if (station === 1) { spentPicks.clear(); $('#s1prompt').textContent = '你想要哪一个？'; }
+          if (station === 2) { words.length = 0; renderSentence(); $('#s2prompt').textContent = '拼出「我要泡泡」'; }
+          if (station === 5) { $('#s5prompt').textContent = '挑一句，说给老师听'; }
+          $('[data-reward]', stationEl(station)).hidden = true;
+          armLadder();
+          notify(`第${station}站重练，从第 1 回合开始`);
+          return;
+        }
+
+        if (event.target.closest('[data-review]')) {
+          notify(`把今天的训练小结讲给孩子并表扬一句：${summaryText()}`, '', true);
+        }
+        if (event.target.closest('[data-next-plan]')) {
+          notify(`这是今天的训练数据：${summaryText()}。请按这些数据给家长 3 条今天在家就能做的下一步练习建议，说人话，别用专业术语。`, '', true);
+        }
+        if (event.target.closest('[data-restart]')) {
+          Object.keys(progress).forEach(key => delete progress[key]);
+          built.clear(); said.clear(); spentPicks.clear();
+          $$('.choice').forEach(el => el.classList.remove('selected', 'lit', 'spent'));
+          $$('.initial').forEach(el => { el.textContent = ''; });
+          $$('[data-reward]').forEach(el => { el.hidden = true; });
+          $$('.feedback').forEach(el => { el.textContent = ''; });
+          $('#complete').classList.remove('active');
+          go(1);
+        }
+      });
+
+      function setTarget5(text) { $('#s5prompt').textContent = `把这句说给老师听：${text}`; }
+      function currentTarget5() {
+        const chosen = $$('.choice', stationEl(5)).find(el => el.classList.contains('selected'));
+        return chosen ? chosen.dataset.say : '我要泡泡';
+      }
+
+      function summaryText() {
+        const parts = [];
+        for (let i = 1; i <= TOTAL; i += 1) {
+          const p = progOf(i);
+          if (!p.rounds) continue;
+          const avg = p.latency.length ? Math.round(p.latency.reduce((a, b) => a + b, 0) / p.latency.length) : 0;
+          parts.push(`第${i}站${TITLES[i]} 独立${p.independent}/${p.rounds}回合，最高提示L${p.level}，平均反应${avg}秒`);
+        }
+        return parts.length ? parts.join('；') : '今天还没有开始练习';
+      }
+
+      function finish() {
+        $$('.course').forEach(node => node.classList.remove('active'));
+        const grid = $('#statGrid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= TOTAL; i += 1) {
+          const p = progOf(i);
+          const card = document.createElement('div');
+          card.innerHTML = `<b>${p.independent} / ${p.rounds}</b>第${i}站 ${TITLES[i]}<br>最高提示 L${p.level}`;
+          grid.appendChild(card);
+        }
+        $('#complete').classList.add('active');
+        clearLadder();
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        notify(`完成了「把想法说出来（语言障碍恢复）」全部五站。${summaryText()}`, '', true);
+      }
     })();
+  </script>
+
+  <!-- 本课的能力清单与教学须知。公共层（提示词/路由/前端）不允许出现本课的学科内容，
+       它们只读这里。协议见 docs/material-protocol.md 第 3 节。 -->
+  <script type="application/aiteacher+json" id="aiteacher-manifest">
+  {
+    "schema": 1,
+    "commands": ["hint", "reveal", "step"],
+    "teacher_notes": "本课面向自闭症与语言障碍者做功能性沟通训练，共 5 站：我来选择、我会请求、我会说不、我会轮流、我来说一说。1. 面向孩子说话只用 1—3 个短句，一次提一个请求，说完就等着，不要补第二句。2. 提示由少到多：先等，再指认或亮首字，最后才示范整句；同一提问最多示范两次，到顶就把话交给家长或老师，不要复读。3. 点选、指一指、手势、发声、口语都是有效沟通，一律算成功；不强迫对视，不要求坐端正，不管自我调节动作。4. 孩子表达了「不要」「停一下」就立刻尊重并说明你听见了，绝不把拒绝当不配合；表达了「帮帮我」先帮忙再提要求。5. 第 1—4 站不要求开口，第 5 站才请孩子说；第 5 站接受近似发音，只要意图清楚就先强化，再自然地示范正确说法一遍，不要连着纠正、不要要求重说到完美为止。6. 反馈要具体（说清他刚才表达了什么、带来了什么结果），不要用「真棒」。7. 若判断输入明显来自照护者，改用简短成人语言给建议。8. 孩子说完成或你要总结时，按上报的训练数据（各站独立回合数、用到的最高提示级、平均反应时长）指出最弱的一站，并给 2—3 条在家能做的下一步练习。9. 本课是陪练材料，不做诊断、不承诺治疗效果；涉及医疗问题建议寻求专业支持。",
+    "command_guide": {
+      "hint": "本课：把该词对应的选项卡或词卡描上紫框并亮出首字（如 泡··）；目标写页面上出现过的词本体，如 泡泡、我、要、不要、帮帮我、轮到我、我要泡泡。",
+      "reveal": "本课：第 5 站把该完整句子标为老师示范并显示在兑现条里，目标写整句（如 我要泡泡）；第 2 站也可以只示范「我」或「要」单个词卡。",
+      "step": "本课共 5 站，值填 1—5 的阿拉伯数字，跳站时课件会告诉孩子是谁把他带过去的。"
+    }
+  }
   </script>
 </body>
 </html>

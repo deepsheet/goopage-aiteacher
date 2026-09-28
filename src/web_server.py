@@ -87,7 +87,13 @@ logger.info("AI 教师模块已初始化")
 
 @app.route('/')
 def index():
-    """项目首页：直接进入 AI 陪练课堂。"""
+    """网站首页：宣传介绍 AI Teacher 产品。"""
+    return render_template('home.html')
+
+
+@app.route('/study')
+def study():
+    """学习页面：直接进入 AI 陪练课堂。"""
     return render_template('aiteacher/index.html', course=DEMO_COURSE)
 
 

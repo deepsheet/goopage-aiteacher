@@ -19,6 +19,9 @@ import requests
 from bs4 import BeautifulSoup
 from werkzeug.utils import secure_filename
 
+from src.apps.aiteacher.material_manifest import manifest_bits
+from src.logger import logger
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_ROOT = Path(
@@ -28,6 +31,8 @@ DATA_ROOT = Path(
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 MAX_FETCH_BYTES = 5 * 1024 * 1024
 MAX_MATERIAL_TEXT_CHARS = 30000
+# 生成整页 HTML 课件时的最大输出 token；现代模型支持长输出，默认 3 万。
+MAX_HTML_OUTPUT_TOKENS = int(os.environ.get('AITEACHER_MATERIAL_MAX_TOKENS', '30000'))
 ALLOWED_UPLOAD_EXTENSIONS = {'.html', '.htm', '.md', '.markdown', '.txt'}
 MATERIAL_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_-]{8,80}$')
 
@@ -138,14 +143,21 @@ def _extract_generated_html(model_output):
     if start is None:
         raise MaterialError('AI 没有返回可打开的 HTML 课件')
     end = lowered.rfind('</html>')
-    if end < start:
-        raise MaterialError('AI 返回的 HTML 课件不完整')
-    document = source[start:end + len('</html>')].strip()
+    if end >= start:
+        document = source[start:end + len('</html>')].strip()
+    else:
+        # 模型输出被长度截断、没写到 </html>：
+        # 不直接丢弃已生成的内容，先取 start 之后的全部输出，
+        # 再交给 BeautifulSoup 自动闭合未关闭的标签，挽救大部分课件。
+        document = source[start:].strip()
     if not document.lower().startswith('<!doctype html'):
         document = '<!doctype html>\n' + document
     soup = BeautifulSoup(document, 'html.parser')
     if soup.html is None or soup.body is None or len(extract_html_text(document)) < 20:
         raise MaterialError('AI 返回的 HTML 课件内容不完整')
+    if end < start:
+        document = str(soup)
+        logger.warning('检测到课件 HTML 未正常收尾，已自动闭合标签挽救已生成内容')
     return document
 
 
@@ -176,6 +188,13 @@ code {{ background:#f0f3ee; border-radius:5px; padding:.1em .35em; }}
         title=html.escape(title), body=body)
 
 
+def _persistable_metadata(metadata):
+    """落盘时去掉内嵌正文与派生字段：课件内容以 HTML 文件（viewer_file）为唯一事实源，
+    JSON 只保留标题、来源与指向 html 文件的元数据；text 与 manifest 在读取时从 HTML 即时派生。"""
+    return {key: value for key, value in metadata.items()
+            if key not in ('text', 'manifest')}
+
+
 def _write_material(owner, title, html_source, text, source_type,
                     source_label='', original_name=''):
     material_id = _new_material_id()
@@ -183,7 +202,8 @@ def _write_material(owner, title, html_source, text, source_type,
     viewer_name = material_id + '.html'
     metadata_name = material_id + '.json'
     html_path = folder / viewer_name
-    html_path.write_text(_complete_html(html_source, title), encoding='utf-8')
+    viewer_html = _complete_html(html_source, title)
+    html_path.write_text(viewer_html, encoding='utf-8')
     metadata = {
         'id': material_id,
         'title': str(title or '学习材料')[:120],
@@ -195,7 +215,11 @@ def _write_material(owner, title, html_source, text, source_type,
         'created_at': datetime.now().isoformat(timespec='seconds'),
     }
     (folder / metadata_name).write_text(
-        json.dumps(metadata, ensure_ascii=False, indent=2), encoding='utf-8')
+        json.dumps(_persistable_metadata(metadata), ensure_ascii=False, indent=2),
+        encoding='utf-8')
+    # 创建响应就带上能力清单，否则前端刚拿到这份课件时会误判它不支持任何操作指令。
+    # 落盘的 JSON 不含该字段（_persistable_metadata 已剔除），读取时一律从 HTML 即时派生。
+    metadata['manifest'] = manifest_bits(metadata, viewer_html)
     return metadata
 
 
@@ -212,7 +236,13 @@ def create_generated_material(owner, requirement, llm_client):
 2. 页面必须包含清晰的学习目标、分步骤讲解、例子、练习和答案提示。
 3. 使用响应式布局、舒适字号、高对比度和内联 CSS；允许少量内联 JavaScript 实现练习互动。
 4. 不引用外部脚本，不提交表单到外部网站，不收集个人信息。
-5. 内容应准确、循序渐进，并适合学生独立阅读与 AI 老师配合讲解。"""
+5. 内容应准确、循序渐进，并适合学生独立阅读与 AI 老师配合讲解。
+6. 篇幅要适度、确保在输出上限内完成：宁可每节精炼，也必须以 </html> 正常收尾，切勿中途断掉。
+7. 本页会被放进一个 sandbox 的 iframe，与左侧 AI 对话区通过 postMessage 配合（协议见 docs/material-protocol.md）。若页面有练习/闯关等互动区，按下面接入：
+   - 上报学习事件：parent.postMessage({type:'aiteacher-learning-action', action:'一句话说明刚发生了什么', spoken:'', respond:false}, '*')。只在关键节点（同一处连错两次、学生主动求助、本环节完成）把 respond 设为 true 以召唤老师；填对一格这类高频事件保持 respond:false。要读给孩子听的话放 spoken，页面刚加载时不要发 spoken（没有用户手势，朗读会被浏览器拦掉）。
+   - 接受老师操作：实现 window.__aiteacherCmd = function ({action, value}) { ... return true或false }，必须同步返回布尔值，同一条指令重复到达不能出错，找不到目标或不支持就返回 false。
+   - 声明能力：在 </body> 前加一段 <script type="application/aiteacher+json" id="aiteacher-manifest">，内容是 {"schema":1,"commands":["hint"],"teacher_notes":"给老师的本课教学须知"}。commands 只能填 hint / reveal / step 中你真正实现了的那几个：hint=给目标一个提示，reveal=公布目标答案，step=跳到指定环节。没有互动区就整段脚本不要写，也不要在代码里写 teacher_notes 以外的提示词。
+8. iframe 内没有可用的 localStorage，学习进度只存内存；AI 老师只能读到页面上可见的文字，所以答案、选项含义、判分要点必须写成页面可见内容，不能只藏在 data-* 属性里。"""
     generation_options = {}
     if str(getattr(llm_client, 'model_name', '')).lower() == 'deepseek':
         # 网页生成需要把输出额度留给完整 HTML，避免默认思考过程挤占 token。
@@ -220,9 +250,10 @@ def create_generated_material(owner, requirement, llm_client):
     generated = llm_client.generate(
         system_prompt,
         '学习需求：\n' + requirement,
-        max_tokens=8192,
+        max_tokens=MAX_HTML_OUTPUT_TOKENS,
         temperature=0.45,
         stream=False,
+        timeout=600,
         **generation_options,
     )
     try:
@@ -232,9 +263,10 @@ def create_generated_material(owner, requirement, llm_client):
         generated = llm_client.generate(
             system_prompt,
             '学习需求：\n%s\n\n上一次没有返回完整网页。现在不要分析、不要解释，直接从 <!doctype html> 开始输出完整 HTML，并以 </html> 结束。' % requirement,
-            max_tokens=8192,
+            max_tokens=MAX_HTML_OUTPUT_TOKENS,
             temperature=0.25,
             stream=False,
+            timeout=600,
             **generation_options,
         )
         completed = _extract_generated_html(generated)
@@ -368,9 +400,9 @@ def load_material(owner, material_id):
     viewer_path = (folder / metadata['viewer_file']).resolve()
     if viewer_path.parent != folder.resolve() or not viewer_path.is_file():
         raise FileNotFoundError('学习材料文件不存在')
+    source = viewer_path.read_text(encoding='utf-8', errors='replace')
     if metadata.get('source_type') == 'generated':
         # 兼容早期版本：模型可能把规划文字放在完整 HTML 前面。
-        source = viewer_path.read_text(encoding='utf-8', errors='replace')
         try:
             repaired = _extract_generated_html(source)
         except MaterialError:
@@ -378,9 +410,13 @@ def load_material(owner, material_id):
         if repaired and repaired.strip() != source.strip():
             viewer_path.write_text(repaired, encoding='utf-8')
             metadata['title'] = _document_title(repaired, metadata.get('title'))
-            metadata['text'] = extract_html_text(repaired)
             metadata_path.write_text(
-                json.dumps(metadata, ensure_ascii=False, indent=2), encoding='utf-8')
+                json.dumps(_persistable_metadata(metadata), ensure_ascii=False, indent=2),
+                encoding='utf-8')
+            source = repaired
+    # 课件正文以 HTML 文件为唯一事实源，读取时即时派生纯文本与能力清单供 AI 讲解使用。
+    metadata['text'] = extract_html_text(source)
+    metadata['manifest'] = manifest_bits(metadata, source)
     return metadata, viewer_path
 
 

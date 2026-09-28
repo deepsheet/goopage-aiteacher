@@ -27,8 +27,13 @@
 
 # 必要的文档（仅保留最重要的）
 !/README.md
+!/AGENTS.md
 !/QUICK_START.md
 !/PRODUCT_INTRO_EN.md
+
+# 项目文档体系与任务记录
+!/docs/
+!/tasks/
 
 # 部署脚本
 !/deploy*.sh
@@ -89,6 +94,10 @@ Thumbs.db
 *.key
 aws_goodpage_key.pem
 /config/config_local.py
+# 服务器侧配置含真实模型密钥，只放在服务器上，永不入库
+/config/config-server.py
+# 部署脚本硬编码生产 IP 与 SSH 密钥路径，仅保留在本机（覆盖上面的 !/deploy*.sh 白名单）
+/deploy-to-china.sh
 
 # Debug and test files
 debug/
@@ -151,6 +160,12 @@ node_modules/
 build/
 dist/
 *.egg
+
+# 文档体系内的 Markdown 不受上面「临时文档」命名规则（DEPLOY*.md / *GUIDE.md 等）影响
+!docs/*.md
+!docs/decisions/*.md
+!tasks/*.md
+!tasks/templates/*.md
 
 # 开源仓库必须保留的根文件（覆盖上面的白名单/临时脚本规则）
 !/.gitignore

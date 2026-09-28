@@ -8,8 +8,11 @@ redis>=4.6,<7
 PyMySQL>=1.1,<2
 
 # Production server
+# 注意：服务器 Python 编译于 OpenSSL 1.0.2，urllib3 必须 <2；
+# gevent 固定到最后一个提供 cp39 预编译 wheel 的版本，避免源码编译失败。
 gunicorn>=21,<24
-gevent>=23.9
+gevent==23.9.1
+urllib3<2
 
 # File storage and content extraction
 beautifulsoup4>=4.12,<5

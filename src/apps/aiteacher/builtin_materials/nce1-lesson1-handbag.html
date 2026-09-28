@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新概念英语 Lesson 1 · Excuse me! 逐词拼句</title>
+  <style>
+    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --purple-soft:#f1eefb; --warm:#fff7e8; --paper:#fff; --canvas:#f4f6f1; --bad:#b4453a; --bad-soft:#fdf0ee; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font:16px/1.7 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif; }
+    button { font:inherit; color:inherit; }
+    button:focus-visible, input:focus-visible { outline:3px solid rgba(102,87,168,.28); outline-offset:2px; }
+    .hero { padding:clamp(26px,6vw,52px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#2b3f63,#41618f); }
+    .hero-inner, main { width:min(920px,100%); margin:auto; }
+    .eyebrow { display:inline-flex; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.14); font-size:12px; font-weight:800; letter-spacing:.08em; }
+    h1 { margin:12px 0 8px; font-size:clamp(28px,6vw,46px); line-height:1.15; }
+    .hero p { max-width:660px; margin:0; color:rgba(255,255,255,.88); font-size:clamp(15px,2.5vw,18px); }
+    .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .principles span { padding:7px 10px; border:1px solid rgba(255,255,255,.22); border-radius:10px; background:rgba(255,255,255,.08); font-size:12px; }
+    main { padding:20px clamp(14px,4vw,30px) 54px; }
+    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 18px; padding:14px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
+    .progress-copy { display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; }.progress-copy strong { color:var(--green); }
+    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:25%; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
+    .stage-nav { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .stage-nav button { min-height:44px; border:1px solid transparent; border-radius:11px; padding:7px 8px; color:var(--muted); background:#f2f4f0; cursor:pointer; font-size:12px; font-weight:700; }
+    .stage-nav button.active { color:var(--dark); border-color:#bcd4c4; background:var(--soft); }
+    .stage-nav button.done { color:var(--green); }
+    .stage { display:none; }.stage.active { display:block; animation:rise .2s ease-out; }
+    .lesson-card, .practice-card { border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .lesson-card { padding:clamp(22px,5vw,40px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
+    .lesson-card::after { content:""; position:absolute; right:-55px; top:-65px; width:210px; height:210px; border:1px solid rgba(38,112,91,.12); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.17),0 0 0 48px rgba(255,255,255,.1); }
+    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }
+    .scene { font-size:clamp(34px,7vw,52px); line-height:1; margin:10px 0 0; }
+    .lesson-card h2 { max-width:640px; margin:6px 0; font-size:clamp(26px,5vw,38px); line-height:1.2; }
+    .lesson-card .situation { max-width:640px; margin:0 0 14px; color:#53635a; }
+    .script-line { display:inline-flex; flex-wrap:wrap; gap:6px; align-items:baseline; margin:0 0 14px; padding:8px 12px; border-radius:12px; color:#3c3358; background:var(--purple-soft); font-size:14px; }
+    .script-line b { font-size:17px; letter-spacing:.02em; }
+    .speak-button, .help-button, .next-button { border:0; border-radius:11px; cursor:pointer; font-weight:800; }
+    .speak-button { padding:10px 14px; color:var(--dark); background:#fff; box-shadow:0 4px 16px rgba(38,112,91,.08); }
+    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }
+    .practice-head { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; }
+    .practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }
+    .practice-head h3 { margin:5px 0 0; font-size:clamp(19px,4vw,25px); }
+    .help-buttons { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .help-button { padding:9px 12px; color:#514771; background:#f4f2fb; border:1px solid #ded7f0; font-size:12px; }
+    .help-button:hover { background:var(--purple-soft); }
+    .blanks { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-start; margin:22px 0 8px; }
+    .blank-cell { display:flex; flex-direction:column; gap:5px; align-items:center; }
+    .blank-cell .cue { color:#8b938c; font-size:11px; }
+    .blank { width:132px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:#fbfcf9; color:var(--ink); font:700 18px/1.3 ui-monospace,"SFMono-Regular",Menlo,monospace; text-align:center; }
+    .blank::placeholder { color:#b9c1ba; font-weight:500; }
+    .blank:hover { border-color:#b9c9bd; }
+    .blank.correct { border-color:#8db6a0; background:var(--soft); color:var(--dark); }
+    .blank.wrong { border-color:#e0aaa2; background:var(--bad-soft); color:var(--bad); }
+    .blank.revealed { border-color:#c3b8e6; background:var(--purple-soft); color:var(--purple); }
+    .hint-letter { min-height:16px; color:var(--purple); font-size:12px; font-weight:800; letter-spacing:.06em; }
+    .shake { animation:shake .32s ease; }
+    .feedback { min-height:28px; margin:12px 0 0; color:var(--green); font-weight:800; text-align:center; }
+    .feedback.bad { color:var(--bad); }
+    .stage-actions { display:flex; justify-content:flex-end; margin-top:14px; }
+    .next-button { padding:11px 18px; color:#fff; background:var(--green); }
+    .next-button:hover { background:var(--dark); }
+    .next-button[disabled] { opacity:.4; cursor:not-allowed; }
+    .coach { display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }
+    .coach strong { flex:0 0 auto; }
+    .complete { text-align:center; padding:35px 20px; }
+    .complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }
+    .complete h2 { margin:15px 0 5px; }
+    .complete p { color:var(--muted); }
+    .stat { display:inline-flex; gap:14px; margin:14px 0 20px; padding:12px 16px; border-radius:14px; background:#fff; border:1px solid var(--line); font-size:13px; }
+    .stat b { color:var(--green); }
+    @keyframes rise { from { opacity:0; transform:translateY(6px); } }
+    @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+    @media(max-width:620px){ .stage-nav { grid-template-columns:repeat(2,1fr); }.practice-head { flex-direction:column; }.help-buttons { justify-content:flex-start; }.blank { width:100%; min-width:150px; }.blank-cell { flex:1 1 45%; } }
+    @media(prefers-reduced-motion:reduce){ * { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">范例教程 · 约 6 分钟 · AI 与课件双向互动</span>
+      <h1>新概念英语 Lesson 1</h1>
+      <p>看中文，一格一词把英文敲出来。这课只有四句话：Excuse me! / Is this your handbag? / Pardon? / Yes.</p>
+      <div class="principles"><span>大小写不算错</span><span>一词一格</span><span>连错两次老师会来教你</span><span>最后由老师解释</span></div>
+    </div>
+  </header>
+  <main>
+    <section class="progress-card" aria-label="课程进度">
+      <div class="progress-copy"><span>课程进度</span><strong id="progressText">1 / 4</strong></div>
+      <div class="track"><span id="progressFill"></span></div>
+      <nav class="stage-nav" id="stageNav">
+        <button class="active" data-goto="1">1 打扰一下</button><button data-goto="2">2 这是你的包吗</button><button data-goto="3">3 请再说一遍</button><button data-goto="4">4 是的</button>
+      </nav>
+    </section>
+
+    <section class="stage active" data-stage="1">
+      <div class="lesson-card">
+        <span class="step">第 1 关 · 打招呼</span>
+        <div class="scene">🅰️</div>
+        <h2>打扰一下</h2>
+        <p class="situation">街上，你看见前面的人把手提包落在了地上，你想提醒他。先说这句。</p>
+        <p class="script-line">课文原句：<b>Excuse me!</b></p>
+        <button class="speak-button" data-speak="Excuse me!">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>一格一词，敲出英文</h3></div>
+          <div class="help-buttons"><button class="help-button" data-hint>💡 要提示</button><button class="help-button" data-explain>🧾 要解释</button></div></div>
+        <div class="blanks">
+          <div class="blank-cell"><span class="cue">第 1 词</span><input class="blank" data-index="1" data-answer="Excuse" placeholder="Excuse" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+          <div class="blank-cell"><span class="cue">第 2 词</span><input class="blank" data-index="2" data-answer="me" placeholder="me" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+        </div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>家长提示</strong><span>这一关只求敢开口。敲对就往下走，不必纠发音；孩子说“不知道”时，可以直接跟老师说“给点提示”。</span></div>
+        <div class="stage-actions"><button class="next-button" data-next="2" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <section class="stage" data-stage="2">
+      <div class="lesson-card">
+        <span class="step">第 2 关 · 一般疑问句</span>
+        <div class="scene">👜</div>
+        <h2>这是你的手提包吗？</h2>
+        <p class="situation">捡起包，问对方是不是他的。这句话有四个词，按中文顺序一个一个想。</p>
+        <p class="script-line">课文原句：<b>Is this your handbag?</b></p>
+        <button class="speak-button" data-speak="Is this your handbag?">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>一格一词，敲出英文</h3></div>
+          <div class="help-buttons"><button class="help-button" data-hint>💡 要提示</button><button class="help-button" data-explain>🧾 要解释</button></div></div>
+        <div class="blanks">
+          <div class="blank-cell"><span class="cue">这 / 那</span><input class="blank" data-index="1" data-answer="Is" placeholder="Is" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+          <div class="blank-cell"><span class="cue">这个</span><input class="blank" data-index="2" data-answer="this" placeholder="this" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+          <div class="blank-cell"><span class="cue">你的</span><input class="blank" data-index="3" data-answer="your" placeholder="your" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+          <div class="blank-cell"><span class="cue">手提包</span><input class="blank" data-index="4" data-answer="handbag" placeholder="handbag" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+        </div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>家长提示</strong><span>句首要动词是中文里没有的新规则，孩子漏掉 Is 或写成 This is your handbag 很正常，交给老师讲，别当场纠正。</span></div>
+        <div class="stage-actions"><button class="next-button" data-next="3" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <section class="stage" data-stage="3">
+      <div class="lesson-card">
+        <span class="step">第 3 关 · 没听清</span>
+        <div class="scene">🅱️</div>
+        <h2>请再说一遍</h2>
+        <p class="situation">对方没听清，回了你这一句。只有一个词，但特别有用。</p>
+        <p class="script-line">课文原句：<b>Pardon?</b></p>
+        <button class="speak-button" data-speak="Pardon?">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>一格一词，敲出英文</h3></div>
+          <div class="help-buttons"><button class="help-button" data-hint>💡 要提示</button><button class="help-button" data-explain>🧾 要解释</button></div></div>
+        <div class="blanks">
+          <div class="blank-cell"><span class="cue">再说一遍</span><input class="blank" data-index="1" data-answer="Pardon" placeholder="Pardon" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+        </div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>家长提示</strong><span>问别人“什么？”也是沟通。孩子在家没听清时，可以鼓励他用这句代替沉默。</span></div>
+        <div class="stage-actions"><button class="next-button" data-next="4" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <section class="stage" data-stage="4">
+      <div class="lesson-card">
+        <span class="step">第 4 关 · 确认</span>
+        <div class="scene">✅</div>
+        <h2>是的</h2>
+        <p class="situation">对方发现包是自己的，这样回答你。一个词就够了。</p>
+        <p class="script-line">课文原句：<b>Yes.</b></p>
+        <button class="speak-button" data-speak="Yes.">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>一格一词，敲出英文</h3></div>
+          <div class="help-buttons"><button class="help-button" data-hint>💡 要提示</button><button class="help-button" data-explain>🧾 要解释</button></div></div>
+        <div class="blanks">
+          <div class="blank-cell"><span class="cue">是</span><input class="blank" data-index="1" data-answer="Yes" placeholder="Yes" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="hint-letter"></span></div>
+        </div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>家长提示</strong><span>四句都填完，今天就可以让孩子把整段对话背下来：Excuse me / Is this your handbag / Pardon / Yes。</span></div>
+        <div class="stage-actions"><button class="next-button" data-finish disabled>完成本课 ✓</button></div>
+      </div>
+    </section>
+
+    <section class="complete" id="complete" hidden>
+      <div class="badge">✓</div>
+      <h2>四关都过了</h2>
+      <p>你已经把今天这四句英文一格一词敲出来了。下面的统计可以拿给老师看，让他挑一处讲讲。</p>
+      <div class="stat"><span>共错 <b id="statErrors">0</b> 次</span><span>最弱单词 <b id="statWeakest">—</b></span></div>
+      <div><button class="help-button" data-review>🧾 让老师总结讲解</button></div>
+      <p style="margin-top:18px"><button class="next-button" data-restart>再练一次</button></p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+      const TOTAL = 4;
+      const SENTENCES = {
+        1: 'Excuse me!', 2: 'Is this your handbag?', 3: 'Pardon?', 4: 'Yes.',
+      };
+      const TITLES = {
+        1: '打扰一下', 2: '这是你的手提包吗？', 3: '请再说一遍', 4: '是的',
+      };
+      let stage = 1;
+      let errors = 0;
+      const wrongByWord = {};
+      const finished = new Set();
+
+      // 与另一个内置教程同一套上报协议：respond=true 时老师会主动回话。
+      function notify(action, spoken = '', respond = false) {
+        parent.postMessage({ type: 'aiteacher-learning-action', action, spoken, respond }, '*');
+      }
+
+      // 忽略大小写、首尾空格与尾部标点：is / Is / Is. 都算对。
+      function norm(value) {
+        return String(value || '').trim().toLowerCase().replace(/[?!.,;:'"]+$/, '');
+      }
+
+      function stageOf(el) {
+        const host = el.closest('[data-stage]');
+        return host ? host.dataset.stage : String(stage);
+      }
+
+      function labelOf(el) {
+        return `第${stageOf(el)}关第${el.dataset.index}空`;
+      }
+
+      function blanksOf(index) {
+        return $$('.blank', $(`.stage[data-stage="${index || stage}"]`));
+      }
+
+      function setFeedback(text, bad) {
+        const host = $('.stage.active');
+        // 完成屏上没有任何 active 关卡，老师这时回话不能因为找不到提示区而报错。
+        const box = host ? $('.feedback', host) : null;
+        if (!box) return;
+        box.textContent = text;
+        box.classList.toggle('bad', !!bad);
+      }
+
+      function unlockedStage(index, enabled) {
+        const host = $(`.stage[data-stage="${index}"]`);
+        const button = $('.next-button', host);
+        if (button) button.disabled = !enabled;
+        const nav = $(`.stage-nav button[data-goto="${index}"]`);
+        if (nav && enabled) nav.classList.add('done');
+      }
+
+      function checkStageComplete() {
+        const cells = blanksOf();
+        if (!cells.length || cells.some(el => !el.dataset.solved)) return false;
+        if (finished.has(stage)) return true;
+        finished.add(stage);
+        unlockedStage(stage, true);
+        setFeedback('这一句拼好了，老师正在给你讲。', false);
+        // 整句拼成：把原句交给老师，让他先读一遍再讲解本关的语法点。
+        notify(`完成第${stage}关，拼出 ${SENTENCES[stage]}`, SENTENCES[stage], true);
+        return true;
+      }
+
+      function markSolved(el, revealed) {
+        el.dataset.solved = '1';
+        el.readOnly = true;
+        el.value = el.dataset.answer;
+        el.classList.remove('wrong');
+        el.classList.add(revealed ? 'revealed' : 'correct');
+      }
+
+      function judge(el) {
+        if (el.dataset.solved) return;
+        const answer = el.dataset.answer;
+        const value = norm(el.value);
+        if (!value) { el.classList.remove('wrong'); return; }
+        // 已经敲的字符是标准答案的开头：孩子可能还在打字，不算错。
+        // 没这一条，打得慢、中途停一下就会被连计两次错、误触发“连错求助”。
+        if (norm(answer).startsWith(value) && value !== norm(answer)) {
+          el.classList.remove('wrong');
+          return;
+        }
+        // 同一串文本不重复计错，免得来回改同一个错词把老师刷过来。
+        if (value === el._judged) return;
+        el._judged = value;
+        if (value === norm(answer)) {
+          markSolved(el, false);
+          setFeedback(`${labelOf(el)}对了：${answer}`, false);
+          // 高频小事件，只记进上下文，不叫老师插话。
+          notify(`${labelOf(el)}填对：${answer}`);
+          checkStageComplete();
+          return;
+        }
+        el.classList.add('wrong');
+        errors += 1;
+        wrongByWord[answer] = (wrongByWord[answer] || 0) + 1;
+        const times = Number(el.dataset.wrong || 0) + 1;
+        el.dataset.wrong = String(times);
+        setFeedback(`${labelOf(el)}还不对，再想想（${times} 次）`, true);
+        if (times >= 2) {
+          // 连错两次就把现场交给老师：把孩子真实输入报上去，让他判断是拼写、大小写还是句型问题。
+          el.dataset.wrong = '0';
+          notify(`${labelOf(el)}连错2次，孩子输入的是"${el.value.trim()}"，标准答案 ${answer}`, '', true);
+        }
+      }
+
+      function findBlank(word, preferStage) {
+        const target = norm(word);
+        if (!target) return null;
+        const pools = [blanksOf(preferStage || stage)];
+        for (let i = 1; i <= TOTAL; i += 1) pools.push(blanksOf(i));
+        for (const pool of pools) {
+          const hit = pool.filter(el => !el.dataset.solved)
+            .find(el => norm(el.dataset.answer) === target);
+          if (hit) return hit;
+        }
+        return null;
+      }
+
+      function showHint(el) {
+        const answer = el.dataset.answer;
+        const slot = el.closest('.blank-cell').querySelector('.hint-letter');
+        if (slot) slot.textContent = `${answer[0]}${'·'.repeat(Math.max(answer.length - 1, 1))}`;
+        el.classList.add('shake');
+        window.setTimeout(() => el.classList.remove('shake'), 400);
+        el.focus();
+      }
+
+      // 聊天页通过注入的桥接脚本调用：老师要给孩子提示、公布答案或翻页时走这里。
+      window.__aiteacherCmd = function ({ action, value }) {
+        if (action === 'step') {
+          const target = parseInt(value, 10);
+          if (!(target >= 1 && target <= TOTAL)) return false;
+          go(target, { announce: true });
+          return true;
+        }
+        const el = findBlank(value);
+        if (!el) return false;
+        const owner = Number(stageOf(el));
+        if (owner !== stage) go(owner, { announce: false });
+        if (action === 'hint') {
+          showHint(el);
+          notify(`老师给${labelOf(el)}亮了首字母提示`);
+          return true;
+        }
+        if (action === 'reveal') {
+          markSolved(el, true);
+          setFeedback(`${labelOf(el)}已由老师给出：${el.dataset.answer}`, false);
+          notify(`老师在${labelOf(el)}公布答案：${el.dataset.answer}`);
+          checkStageComplete();
+          return true;
+        }
+        return false;
+      };
+
+      function go(index, options = {}) {
+        stage = Number(index) || 1;
+        $$('.stage').forEach(node => node.classList.toggle('active', node.dataset.stage === String(stage)));
+        $$('.stage-nav button').forEach(node => node.classList.toggle('active', node.dataset.goto === String(stage)));
+        $('#progressText').textContent = `${stage} / ${TOTAL}`;
+        $('#progressFill').style.width = `${(stage / TOTAL) * 100}%`;
+        setFeedback('', false);
+        if (options.announce) {
+          // 只有孩子主动翻页才让老师朗读这句；首次加载不做朗读，避开无手势时的播放限制。
+          notify(`进入第${stage}关：${TITLES[stage]}`, SENTENCES[stage], false);
+        } else {
+          notify(`进入第${stage}关：${TITLES[stage]}`);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function finish() {
+        $$('.stage').forEach(node => node.classList.remove('active'));
+        $('#complete').hidden = false;
+        $('#statErrors').textContent = String(errors);
+        const weakest = Object.keys(wrongByWord).sort((a, b) => wrongByWord[b] - wrongByWord[a])[0];
+        $('#statWeakest').textContent = weakest || '一次没错';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        notify(`完成了新概念Lesson 1全部四关，共错${errors}次，最弱的是${weakest || '没有'}`, '', true);
+      }
+
+      $('#stageNav').addEventListener('click', event => {
+        const button = event.target.closest('[data-goto]');
+        if (button) go(button.dataset.goto, { announce: true });
+      });
+
+      $$('.stage').forEach(host => {
+        host.addEventListener('input', event => {
+          const el = event.target.closest('.blank');
+          if (!el || el.dataset.solved) return;
+          // 敲完一个词稍等一下再判，避免边打字边报错；计时器挂在格子上，
+          // 免得孩子在两个空格间来回改时，前一格的判定被顶掉。
+          window.clearTimeout(el._timer);
+          el._timer = window.setTimeout(() => judge(el), 400);
+        });
+        host.addEventListener('click', event => {
+          const el = event.target.closest('.blank');
+          if (el && el.classList.contains('wrong')) {
+            el.classList.remove('wrong');
+            el.value = '';
+            el.focus();
+          }
+        });
+      });
+
+      document.addEventListener('click', event => {
+        const speak = event.target.closest('[data-speak]');
+        if (speak) notify('点击了听老师读', speak.dataset.speak);
+
+        const next = event.target.closest('[data-next]');
+        if (next) go(next.dataset.next, { announce: true });
+
+        if (event.target.closest('[data-finish]')) finish();
+        if (event.target.closest('[data-review]')) notify('请求老师总结讲解今天的四句话', '', true);
+        if (event.target.closest('[data-explain]')) notify(`请求老师解释第${stage}关的中文意思与用法`, '', true);
+
+        const hint = event.target.closest('[data-hint]');
+        if (hint) {
+          const pending = blanksOf().filter(el => !el.dataset.solved);
+          const target = pending[0];
+          if (!target) { setFeedback('这一关已经拼完啦，可以直接点下一关。', false); return; }
+          showHint(target);
+          notify(`${labelOf(target)}求助要提示（还没拼出 ${SENTENCES[stage]}）`, '', true);
+        }
+
+        if (event.target.closest('[data-restart]')) {
+          errors = 0;
+          finished.clear();
+          Object.keys(wrongByWord).forEach(key => delete wrongByWord[key]);
+          $$('.blank').forEach(el => {
+            el.value = ''; el.readOnly = false; el.dataset.solved = '';
+            el.dataset.wrong = '0'; el._judged = '';
+            el.classList.remove('correct', 'wrong', 'revealed');
+          });
+          $$('.hint-letter').forEach(el => { el.textContent = ''; });
+          $$('.next-button').forEach(el => { el.disabled = true; });
+          $$('.stage-nav button').forEach(el => el.classList.remove('done'));
+          $('#complete').hidden = true;
+          go(1, { announce: true });
+        }
+      });
+
+      go(1);
+    })();
+  </script>
+
+  <!-- 本课的能力清单与教师须知。公共层（提示词/路由/前端）不允许出现本课的学科信息，
+       它们只读这里。协议见 docs/material-protocol.md 第 3 节。 -->
+  <script type="application/aiteacher+json" id="aiteacher-manifest">
+  {
+    "schema": 1,
+    "commands": ["hint", "reveal", "step"],
+    "teacher_notes": "本课把中文句子一格一词敲成英文，共 4 关，句子依次是 Excuse me / Is this your handbag / Pardon / Yes。判分忽略大小写和句末标点，不要纠正书写规范。孩子卡住时先提示一个词，不要一次报出整句；漏掉句首动词（比如只写了 this your handbag）时，用中文问“是谁在问？”引导他自己补出 Is，不要直接讲一般疑问句语法。每关拼完后，用一句中文说清新增那个词在句子里的作用，再往后走。",
+    "command_guide": {
+      "hint": "本课：在练习区包含该词的空格上亮出首字母，形如 h······；目标写单词本体（如 handbag），不带标点。",
+      "reveal": "本课：把该词直接填进对应空格并标成已解决；目标写单词本体。",
+      "step": "本课共 4 关，值填 1—4 的阿拉伯数字。"
+    }
+  }
+  </script>
+</body>
+</html>
