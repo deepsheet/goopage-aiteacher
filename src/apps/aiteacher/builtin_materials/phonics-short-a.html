@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自然拼读 · 短元音 a</title>
+<style>
+  :root{
+    --bg:#fffaf3; --card:#ffffff; --ink:#3b3226; --muted:#8a7f70;
+    --line:#f0e3cf; --brand:#e8843c; --brand-soft:#fdf0e2;
+    --ok:#3f9d63; --ok-soft:#eaf6ee; --warn:#c96a4a; --warn-soft:#fbeee9;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+    font-size:17px; line-height:1.6; padding:14px 14px 40px;
+    -webkit-text-size-adjust:100%;
+  }
+  header.hd{margin-bottom:14px}
+  .hd-title{font-size:22px;font-weight:700;letter-spacing:.5px}
+  .hd-sub{color:var(--muted);font-size:14px;margin-top:2px}
+  .steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .step-btn{
+    flex:1 1 auto; min-width:120px; padding:9px 10px; border-radius:12px;
+    border:1px solid var(--line); background:var(--card); color:var(--muted);
+    font-size:14px; cursor:pointer; transition:.15s;
+  }
+  .step-btn[aria-current="true"]{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
+  .step-btn.done{border-color:#cfe8d6;color:var(--ok)}
+  .bar{height:8px;border-radius:8px;background:#f1e6d6;margin-top:12px;overflow:hidden}
+  .bar-in{height:100%;width:0;background:var(--brand);transition:width .25s}
+
+  main{max-width:820px;margin:0 auto}
+  section.stage{
+    display:none; background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:20px; margin-bottom:16px;
+    box-shadow:0 1px 0 rgba(0,0,0,.02);
+  }
+  section.stage.on{display:block; animation:fade .2s}
+
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2{font-size:19px;margin:0 0 4px}
+  .lead{color:var(--muted);font-size:15px;margin:0 0 16px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+  .chip{background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:4px 12px;font-size:15px;font-weight:600}
+  .chip.en{font-family:Georgia,"Times New Roman",serif}
+
+  .big-letter{font-size:96px;line-height:1;font-weight:700;color:var(--brand);text-align:center;margin:8px 0}
+  .mouth{text-align:center;color:var(--muted);font-size:15px}
+
+  .card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .pick{
+    border:1px solid var(--line);border-radius:14px;background:#fffdf9;padding:14px;
+    text-align:center;cursor:pointer;transition:.15s;
+  }
+  .pick:hover{border-color:var(--brand);transform:translateY(-1px)}
+  .pick .emo{font-size:40px;display:block;line-height:1.2}
+  .pick .word{font-family:Georgia,"Times New Roman",serif;font-size:22px;letter-spacing:1px}
+  .pick .cn{color:var(--muted);font-size:14px}
+  .pick.right{border-color:var(--ok);background:var(--ok-soft)}
+  .pick.wrong{border-color:var(--warn);background:var(--warn-soft)}
+
+  .q{
+    display:flex;align-items:center;gap:12px;padding:12px;
+    border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:#fffdf9;
+  }
+  .q .q-hint{font-size:34px;line-height:1}
+  .q .q-cn{color:var(--muted);font-size:15px;min-width:44px}
+  input.blk{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:24px;letter-spacing:2px;text-align:center;
+    width:150px;max-width:42vw;padding:6px 4px;border:none;
+    border-bottom:2px solid var(--brand);background:transparent;color:var(--ink);
+  }
+  input.blk:focus{outline:none;border-bottom-color:var(--brand);background:#fff8ef}
+  input.blk.ok{border-bottom-color:var(--ok);color:var(--ok)}
+  input.blk.bad{border-bottom-color:var(--warn);color:var(--warn)}
+  .q .mark{font-size:20px;min-width:24px;text-align:center}
+
+  .sentence{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:Georgia,"Times New Roman",serif;font-size:22px;margin-bottom:10px}
+  .sentence input.blk{width:130px}
+
+  button.act{
+    border:1px solid var(--brand);background:var(--brand);color:#fff;
+    border-radius:12px;padding:10px 16px;font-size:16px;cursor:pointer;transition:.15s;
+  }
+  button.act:hover{filter:brightness(.96)}
+  button.act.ghost{background:#fff;color:var(--brand)}
+  button.act:disabled{opacity:.45;cursor:default}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .fb{margin-top:12px;font-size:15px;min-height:22px;color:var(--muted)}
+  .fb.ok{color:var(--ok)}
+  .fb.bad{color:var(--warn)}
+
+  .finish{text-align:center}
+  .finish .big{font-size:44px}
+  .finish h2{margin-top:8px}
+  .hidden{display:none}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-title">自然拼读 · 短元音 a</div>
+  <div class="hd-sub">听音拼词启蒙课 · 约 8 分钟</div>
+  <nav class="steps" aria-label="关卡">
+    <button class="step-btn" type="button" data-step="1">1 · 认识 /æ/</button>
+    <button class="step-btn" type="button" data-step="2">2 · 首音是谁</button>
+    <button class="step-btn" type="button" data-step="3">3 · 拼出来</button>
+    <button class="step-btn" type="button" data-step="4">4 · 读一读</button>
+  </nav>
+  <div class="bar"><div class="bar-in" id="barIn"></div></div>
+</header>
+
+<main>
+  <!-- 第 1 关：认识 /æ/ -->
+  <section class="stage" data-stage="1" data-title="认识 /æ/">
+    <h2>第 1 关 · 认识短元音 a</h2>
+    <p class="lead">这个字母读 /æ/，嘴巴张大，像笑着说“啊”。</p>
+    <div class="big-letter">a</div>
+    <p class="mouth">/æ/ · 嘴巴张大 · 声音短短</p>
+    <div class="chip-row">
+      <span class="chip">猫 cat</span>
+      <span class="chip">帽子 hat</span>
+      <span class="chip">包 bag</span>
+      <span class="chip">地图 map</span>
+    </div>
+    <div class="actions">
+      <button class="act ghost" type="button" id="listen1">🔊 听老师读 cat</button>
+      <button class="act" type="button" data-next="2">我认识了，下一关 →</button>
+    </div>
+  </section>
+
+  <!-- 第 2 关：首音是谁 -->
+  <section class="stage" data-stage="2" data-title="首音是谁">
+    <h2>第 2 关 · 第一个音是谁？</h2>
+    <p class="lead">看图和词，选出它开头的字母。</p>
+    <div id="pickArea" class="card-row" aria-live="polite"></div>
+    <p class="fb" id="fb2"></p>
+    <div class="actions">
+      <button class="act" type="button" data-next="3" id="next2" disabled>下一关 →</button>
+    </div>
+  </section>
+
+  <!-- 第 3 关：拼出来 -->
+  <section class="stage" data-stage="3" data-title="拼出来">
+    <h2>第 3 关 · 把单词拼出来</h2>
+    <p class="lead">看图，把单词一个字母一个字母敲出来（小写即可）。</p>
+    <div class="chip-row" id="bank3">
+      <span class="chip en">cat</span>
+      <span class="chip en">hat</span>
+      <span class="chip en">bag</span>
+      <span class="chip en">map</span>
+    </div>
+    <div id="spell3"></div>
+    <p class="fb" id="fb3"></p>
+    <div class="actions">
+      <button class="act" type="button" data-next="4" id="next3" disabled>下一关 →</button>
+    </div>
+  </section>
+
+  <!-- 第 4 关：读一读 -->
+  <section class="stage" data-stage="4" data-title="读一读">
+    <h2>第 4 关 · 读一读短句</h2>
+    <p class="lead">把句子里的单词补全，再请老师带你读一遍。</p>
+    <div class="sentence">A <input class="blk" data-answer="cat" id="s1" inputmode="latin" autocomplete="off" spellcheck="false" aria-label="补全句子第一个单词"> .</div>
+    <div class="sentence">A <input class="blk" data-answer="hat" id="s2" inputmode="latin" autocomplete="off" spellcheck="false" aria-label="补全句子第二个单词"> .</div>
+    <div class="chip-row">
+      <span class="chip">A cat. 一只猫。</span>
+      <span class="chip">A hat. 一顶帽子。</span>
+    </div>
+    <p class="fb" id="fb4"></p>
+    <div class="actions">
+      <button class="act ghost" type="button" id="listen4">🔊 听老师读这两句</button>
+      <button class="act" type="button" id="done4">读完啦，完成 ✓</button>
+    </div>
+  </section>
+
+  <!-- 完成屏 -->
+  <section class="stage finish" data-stage="5" data-title="完成">
+    <div class="big">🎉</div>
+    <h2>太棒了，短元音 a 学完啦！</h2>
+    <p class="lead" id="summary">你今天认识了 /æ/，还会拼 cat、hat、bag、map。</p>
+    <div class="actions" style="justify-content:center">
+      <button class="act ghost" type="button" id="again">再练一遍</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var TOTAL = 4;
+  var state = { step: 1, done: {}, wrong: {} };
+
+  function notify(action, spoken, respond) {
+    parent.postMessage({
+      type: 'aiteacher-learning-action',
+      action: action,
+      spoken: spoken || '',
+      respond: !!respond
+    }, '*');
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function stepTitle(n) {
+    var sec = $('section[data-stage="' + n + '"]');
+    return sec ? sec.getAttribute('data-title') : '';
+  }
+
+  function renderNav() {
+    $$('.step-btn').forEach(function (b) {
+      var n = parseInt(b.getAttribute('data-step'), 10);
+      b.setAttribute('aria-current', n === state.step ? 'true' : 'false');
+      b.classList.toggle('done', !!state.done[n]);
+    });
+    var pct = Math.round(((state.step - 1) / TOTAL) * 100);
+    if (state.step > TOTAL) pct = 100;
+    $('#barIn').style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  function goStep(n, silent) {
+    n = Math.max(1, Math.min(5, parseInt(n, 10) || 1));
+    state.step = n;
+    $$('section.stage').forEach(function (s) {
+      s.classList.toggle('on', parseInt(s.getAttribute('data-stage'), 10) === n);
+    });
+    renderNav();
+    window.scrollTo(0, 0);
+    if (!silent) notify('切换到第 ' + n + ' 关：' + stepTitle(n), '', false);
+  }
+
+  /* ---------- 第 2 关：首音选择 ---------- */
+  var PICKS = [
+    { emo: '🐱', word: 'cat', cn: '猫', first: 'c' },
+    { emo: '🎩', word: 'hat', cn: '帽子', first: 'h' },
+    { emo: '👜', word: 'bag', cn: '包', first: 'b' },
+    { emo: '🗺️', word: 'map', cn: '地图', first: 'm' }
+  ];
+  var LETTERS = ['c', 'h', 'b', 'm'];
+
+  function buildPick() {
+    var area = $('#pickArea');
+    area.innerHTML = '';
+    var solved = 0;
+    PICKS.forEach(function (p, i) {
+      var card = document.createElement('div');
+      card.className = 'pick';
+      card.setAttribute('role', 'group');
+      var head = document.createElement('div');
+      head.innerHTML = '<span class="emo">' + p.emo + '</span><span class="cn">' + p.cn + '</span>';
+      var opts = document.createElement('div');
+      opts.className = 'chip-row';
+      opts.style.justifyContent = 'center';
+      LETTERS.forEach(function (L) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'act ghost';
+        b.style.minWidth = '44px';
+        b.textContent = L;
+        b.setAttribute('aria-label', p.cn + ' 的开头字母 ' + L);
+        b.addEventListener('click', function () {
+          if (card.classList.contains('right')) return;
+          if (L === p.first) {
+            card.classList.add('right');
+            opts.style.visibility = 'hidden';
+            solved++;
+            notify('第2关：' + p.cn + ' 的首音选对，是 ' + p.first, '', false);
+            if (solved === PICKS.length) {
+              state.done[2] = true;
+              $('#fb2').textContent = '四个都选对啦，真棒！';
+              $('#fb2').className = 'fb ok';
+              $('#next2').disabled = false;
+              notify('第2关完成：4 个首音全部选对', '四个首音都选对啦，真棒！', true);
+              renderNav();
+            }
+          } else {
+            card.classList.add('wrong');
+            setTimeout(function () { card.classList.remove('wrong'); }, 600);
+            notify('第2关：' + p.cn + ' 的首音选了 ' + L + '，还没对', '', false);
+          }
+        });
+        opts.appendChild(b);
+      });
+      card.appendChild(head);
+      card.appendChild(opts);
+      area.appendChild(card);
+    });
+  }
+
+  /* ---------- 第 3 关：拼单词（前缀豁免判分） ---------- */
+  var WORDS = [
+    { emo: '🐱', cn: '猫', w: 'cat' },
+    { emo: '🎩', cn: '帽子', w: 'hat' },
+    { emo: '👜', cn: '包', w: 'bag' },
+    { emo: '🗺️', cn: '地图', w: 'map' }
+  ];
+
+  function norm(s) { return String(s || '').replace(/[.\s　]+$/g, '').toLowerCase(); }
+
+  function judgeInput(input, onOk) {
+    var ans = input.getAttribute('data-answer') || '';
+    var val = norm(input.value);
+    var key = input.id || input.getAttribute('data-answer');
+    if (!val) { input.classList.remove('ok', 'bad'); return 'empty'; }
+    if (val === norm(ans)) {
+      input.classList.add('ok'); input.classList.remove('bad');
+      var mark = input.parentNode.querySelector('.mark');
+      if (mark) mark.textContent = '✅';
+      if (state.wrong[key] !== 'ok') { state.wrong[key] = 'ok'; }
+      onOk && onOk();
+      return 'ok';
+    }
+    if (norm(ans).indexOf(val) === 0) {
+      // 已敲出的是答案开头：算“输入中”，不判错
+      input.classList.remove('bad');
+      return 'typing';
+    }
+    // 真正错误：同一串文本只计一次
+    var last = input.getAttribute('data-last') || '';
+    if (last !== val) {
+      input.setAttribute('data-last', val);
+      state.wrong[key] = (state.wrong[key] || 0) + 1;
+      input.classList.add('bad');
+      if (state.wrong[key] >= 2) {
+        notify('第' + state.step + '关「' + ans + '」连错 ' + state.wrong[key] + ' 次，孩子输入的是 ' +
+          (input.value || '(空)') + '，标准答案 ' + ans, '', true);
+      } else {
+        notify('第' + state.step + '关「' + ans + '」填成了 ' + input.value, '', false);
+      }
+    }
+    return 'bad';
+  }
+
+  function buildSpell() {
+    var wrap = $('#spell3');
+    wrap.innerHTML = '';
+    var solved = 0;
+    WORDS.forEach(function (p, i) {
+      var row = document.createElement('div');
+      row.className = 'q';
+      row.innerHTML =
+        '<span class="q-hint">' + p.emo + '</span>' +
+        '<span class="q-cn">' + p.cn + '</span>';
+      var input = document.createElement('input');
+      input.className = 'blk';
+      input.id = 'w3_' + p.w;
+      input.setAttribute('data-answer', p.w);
+      input.setAttribute('inputmode', 'latin');
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('spellcheck', 'false');
+      input.setAttribute('aria-label', '拼写' + p.cn);
+      var mark = document.createElement('span');
+      mark.className = 'mark';
+      var timer = null;
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          var r = judgeInput(input, function () {
+            solved++;
+            notify('第3关：拼出 ' + p.w, p.w, false);
+            if (solved === WORDS.length && !state.done[3]) {
+              state.done[3] = true;
+              $('#fb3').textContent = '四个词都拼对啦！';
+              $('#fb3').className = 'fb ok';
+              $('#next3').disabled = false;
+              notify('第3关完成：cat、hat、bag、map 全部拼对', '四个词都拼对啦，真棒！', true);
+              renderNav();
+            }
+          });
+          if (r === 'typing') $('#fb3').textContent = '继续，你在正确的路上～';
+          if (r === 'bad') $('#fb3').textContent = '再听一听开头是什么音？';
+          if (r === 'ok') $('#fb3').textContent = '';
+        }, 400);
+      });
+      row.appendChild(input);
+      row.appendChild(mark);
+      wrap.appendChild(row);
+    });
+  }
+
+  /* ---------- 第 4 关：读一读 ---------- */
+  function buildRead() {
+    ['s1', 's2'].forEach(function (id) {
+      var input = document.getElementById(id);
+      var timer = null;
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          judgeInput(input, function () {
+            notify('第4关：补全 ' + (id === 's1' ? 'A cat.' : 'A hat.'), '', false);
+          });
+        }, 400);
+      });
+    });
+  }
+
+  /* ---------- 指令钩子 ---------- */
+  function currentInputs() {
+    if (state.step === 3) return $$('#spell3 input.blk');
+    if (state.step === 4) return ['s1', 's2'].map(function (i) { return document.getElementById(i); });
+    return [];
+  }
+  function firstPending() {
+    var list = currentInputs();
+    for (var i = 0; i < list.length; i++) {
+      var inp = list[i];
+      if (norm(inp.value) !== norm(inp.getAttribute('data-answer'))) return inp;
+    }
+    return null;
+  }
+
+  window.__aiteacherCmd = function (cmd) {
+    try {
+      cmd = cmd || {};
+      var action = cmd.action;
+      if (action === 'step') {
+        var n = parseInt(cmd.value, 10);
+        if (n >= 1 && n <= 4) { goStep(n); return true; }
+        return false;
+      }
+      if (action === 'hint') {
+        var inp = firstPending();
+        if (!inp) return false;
+        var ans = inp.getAttribute('data-answer') || '';
+        if (!ans) return false;
+        inp.value = ans.charAt(0);
+        inp.classList.remove('bad');
+        inp.focus();
+        notify('老师给了提示：' + ans.charAt(0) + ' 开头', '', false);
+        return true;
+      }
+      if (action === 'reveal') {
+        var inp2 = firstPending();
+        if (!inp2) return false;
+        inp2.value = inp2.getAttribute('data-answer');
+        var r = judgeInput(inp2);
+        inp2.focus();
+        notify('老师公布了答案：' + inp2.getAttribute('data-answer'), '', false);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  /* ---------- 事件绑定 ---------- */
+  function bind() {
+    $$('.step-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        goStep(parseInt(b.getAttribute('data-step'), 10));
+      });
+    });
+    $$('[data-next]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        goStep(parseInt(b.getAttribute('data-next'), 10));
+      });
+    });
+    var l1 = document.getElementById('listen1');
+    if (l1) l1.addEventListener('click', function () {
+      notify('第1关：点了听老师读 cat', 'cat', false);
+    });
+    var l4 = document.getElementById('listen4');
+    if (l4) l4.addEventListener('click', function () {
+      notify('第4关：点了听老师读两句', 'A cat. A hat.', false);
+    });
+    var d4 = document.getElementById('done4');
+    if (d4) d4.addEventListener('click', function () {
+      state.done[4] = true;
+      $('#summary').textContent = '你今天认识了 /æ/，拼对了 cat、hat、bag、map，还读了两句话。';
+      notify('整课完成：短元音 a 四个关卡全部完成', '整课完成啦，你今天很棒！', true);
+      goStep(5);
+    });
+    var ag = document.getElementById('again');
+    if (ag) ag.addEventListener('click', function () {
+      state = { step: 1, done: {}, wrong: {} };
+      buildPick(); buildSpell(); buildRead();
+      $('#fb2').textContent = ''; $('#fb3').textContent = ''; $('#fb4').textContent = '';
+      $('#next2').disabled = true; $('#next3').disabled = true;
+      goStep(1, true);
+    });
+  }
+
+  buildPick();
+  buildSpell();
+  buildRead();
+  bind();
+  goStep(1, true);
+  // 首屏不朗读（音频需用户手势），仅上报一次进入事件
+  notify('进入自然拼读《短元音 a》第 1 关', '', false);
+})();
+</script>
+
+<script type="application/aiteacher+json" id="aiteacher-manifest">
+{
+  "schema": 1,
+  "commands": ["hint", "reveal", "step"],
+  "teacher_notes": "本课练短元音 a（/æ/）的听音拼词，共 4 关：认识 /æ/ → 首音是谁 → 拼出来 → 读一读。孩子把音读成“啊”或短促的 a 都算对，不要纠正口型、不要讲音标术语；拼写只判字母，忽略大小写与句末标点，已经敲出答案前几个字母不算错。孩子卡住时先给一个音或首字母提示（如“第 3 关这个词是 c 开头”），不要直接说答案。用说的、用指的、安静地听，都算参与。",
+  "command_guide": {
+    "hint": "本课：在当前练习位置的空格里亮出目标单词的首字母，形如 c···（第 2 关为提示所属首音）。",
+    "reveal": "本课：把当前空格直接填成正确单词（如 cat / hat / bag / map）。",
+    "step": "本课共 4 关，step 填 1—4：1 认识 /æ/、2 首音是谁、3 拼出来、4 读一读。"
+  }
+}
+</script>
+</body>
+</html>

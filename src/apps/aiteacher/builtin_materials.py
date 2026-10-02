@@ -37,6 +37,36 @@ BUILTIN_CATALOG = {
         'source_label': '系统内置教程 · 英语学科范例',
         'filename': 'nce1-lesson1-handbag.html',
     },
+    'emotion-radar-basics': {
+        'id': 'emotion-radar-basics',
+        'title': '我的情绪小雷达',
+        'subtitle': '情绪识别与自我调节体验课',
+        'description': '认识开心、难过、生气、害怕四种情绪，判断他人感受、对应身体信号，并自选一个调节办法，共 4 关。',
+        'duration': '约 12 分钟',
+        'source_type': 'builtin',
+        'source_label': '系统内置教程 · 情绪与自我调节',
+        'filename': 'emotion-radar-basics.html',
+    },
+    'phonics-short-a': {
+        'id': 'phonics-short-a',
+        'title': '自然拼读 · 短元音 a',
+        'subtitle': '听音拼词 /æ/',
+        'description': '练短元音 a（/æ/）的听音拼词，共 4 关：认识 /æ/ → 首音是谁 → 拼出来 → 读一读。',
+        'duration': '约 8 分钟',
+        'source_type': 'builtin',
+        'source_label': '系统内置教程 · 英语学科范例',
+        'filename': 'phonics-short-a.html',
+    },
+    'daily-routine-out-the-door': {
+        'id': 'daily-routine-out-the-door',
+        'title': '出门前的准备',
+        'subtitle': '日常生活流程与自理课',
+        'description': '起床顺序、洗手六步、出门清单、过马路安全，四关练生活自理与流程，低压力、可等待、不批评。',
+        'duration': '约 12 分钟',
+        'source_type': 'builtin',
+        'source_label': '系统内置教程 · 日常生活与自理',
+        'filename': 'daily-routine-out-the-door.html',
+    },
 }
 
 

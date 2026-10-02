@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>出门前的准备 · 日常生活流程与自理课</title>
+  <style>
+    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --purple-soft:#f1eefb; --warm:#fff7e8; --paper:#fff; --canvas:#f4f6f1; --bad:#b4453a; --bad-soft:#fdf0ee; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font:16px/1.7 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif; }
+    button { font:inherit; color:inherit; }
+    button:focus-visible { outline:3px solid rgba(38,112,91,.28); outline-offset:3px; }
+    .hero { padding:clamp(26px,6vw,54px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#2b5788,#3f7fb5); }
+    .hero-inner, main { width:min(940px,100%); margin:auto; }
+    .eyebrow { display:inline-flex; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.14); font-size:12px; font-weight:800; letter-spacing:.08em; }
+    h1 { margin:12px 0 8px; font-size:clamp(28px,5.6vw,44px); line-height:1.15; }
+    .hero p { max-width:680px; margin:0; color:rgba(255,255,255,.9); font-size:clamp(15px,2.4vw,17px); }
+    .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .principles span { padding:7px 10px; border:1px solid rgba(255,255,255,.22); border-radius:10px; background:rgba(255,255,255,.08); font-size:12px; }
+    main { padding:18px clamp(14px,4vw,30px) 54px; }
+
+    /* 开场屏：第一次进来先看懂这个产品怎么用 */
+    .start { padding:clamp(20px,4vw,32px); border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .start h2 { margin:6px 0 4px; font-size:clamp(22px,4.4vw,30px); }
+    .start .start-sub { margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .howto { display:grid; gap:10px; margin:18px 0; }
+    .howto div { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:#f2f6f1; }
+    .howto b { flex:0 0 auto; width:24px; height:24px; display:grid; place-items:center; border-radius:8px; color:#fff; background:var(--green); font-size:13px; }
+    .howto p { margin:0; font-size:14px; }
+    .howto small { display:block; color:var(--muted); font-size:12px; }
+    .mode-pick { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+    .mode-pick button { padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#fbfcf9; cursor:pointer; font-weight:800; font-size:13px; }
+    .mode-pick button.active { color:var(--dark); border-color:#8db6a0; background:var(--soft); }
+    .mode-pick button small { display:block; color:var(--muted); font-weight:600; font-size:11px; }
+    .start-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px; }
+    .big-start { padding:14px 22px; border:0; border-radius:14px; color:#fff; background:var(--green); font-weight:900; font-size:17px; cursor:pointer; }
+    .big-start:hover { background:var(--dark); }
+    .demo-button { padding:12px 16px; border:1px dashed #9db8a6; border-radius:14px; background:#fff; color:var(--dark); font-weight:800; cursor:pointer; }
+    .scope-note { margin:14px 0 0; padding:11px 13px; border-radius:12px; background:var(--warm); color:#765c2d; font-size:12px; }
+
+    /* 进度与关卡导航 */
+    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 16px; padding:13px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
+    .progress-copy { display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; }.progress-copy strong { color:var(--green); }
+    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:25%; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
+    .stage-nav { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .stage-nav button { min-height:46px; border:1px solid transparent; border-radius:11px; padding:7px 8px; color:var(--muted); background:#f2f4f0; cursor:pointer; font-size:12px; font-weight:800; }
+    .stage-nav button.active { color:var(--dark); border-color:#bcd4c4; background:var(--soft); }
+    .stage-nav button.done { color:var(--green); }
+
+    .stage { display:none; }.stage.active { display:block; animation:rise .2s ease-out; }
+    .lesson-card, .practice-card { border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .lesson-card { padding:clamp(22px,5vw,40px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
+    .lesson-card::after { content:""; position:absolute; right:-55px; top:-65px; width:210px; height:210px; border:1px solid rgba(38,112,91,.12); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.17),0 0 0 48px rgba(255,255,255,.1); }
+    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }
+    .scene { font-size:clamp(32px,7vw,48px); line-height:1; margin:10px 0 0; }
+    .lesson-card h2 { max-width:640px; margin:8px 0; font-size:clamp(25px,4.6vw,35px); line-height:1.2; }
+    .lesson-card .situation { max-width:640px; margin:0 0 16px; color:#53635a; }
+    .speak-button, .help-button, .next-button, .retry-button, .confirm-button { border:0; border-radius:11px; cursor:pointer; font-weight:800; }
+    .speak-button { padding:10px 14px; color:var(--dark); background:#fff; box-shadow:0 4px 16px rgba(38,112,91,.08); }
+    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }
+    .practice-head { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; }
+    .practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }
+    .practice-head h3 { margin:5px 0 0; font-size:clamp(19px,4vw,25px); }
+    .help-buttons { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .help-button { padding:9px 12px; color:#514771; background:#f4f2fb; border:1px solid #ded7f0; font-size:12px; }
+    .help-button:hover { background:var(--purple-soft); }
+
+    /* 点击排序：目标区 + 卡片池 */
+    .order-target { min-height:58px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:20px 0 14px; padding:12px 14px; border:1px dashed #bcd0c1; border-radius:16px; background:#f7faf6; }
+    .order-target em { color:#8b938c; font-size:13px; }
+    .placed-chip { display:inline-flex; gap:7px; align-items:center; padding:8px 12px; border-radius:11px; background:var(--soft); color:var(--dark); font-weight:800; font-size:14px; }
+    .placed-chip b { display:grid; place-items:center; width:20px; height:20px; border-radius:6px; background:var(--green); color:#fff; font-size:12px; }
+    .pool { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 6px; }
+    .chip { display:inline-flex; gap:8px; align-items:center; padding:12px 16px; border:1px solid var(--line); border-radius:14px; background:#fbfcf9; cursor:pointer; font-weight:800; font-size:15px; }
+    .chip:hover { border-color:#8db6a0; background:var(--soft); transform:translateY(-1px); }
+    .chip.lit { border-color:#a99cd6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.16); }
+    .chip.placed { opacity:.42; cursor:default; transform:none; }
+    .chip.placed.revealed { opacity:.7; border-color:#c3b8e6; background:var(--purple-soft); }
+    .chip-emoji { font-size:19px; }
+    .chip.shake { animation:shake .4s ease; }
+
+    /* 出门清单：多选 */
+    .check-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:20px 0 12px; }
+    .check-item { display:flex; gap:10px; align-items:center; padding:13px 15px; border:1px solid var(--line); border-radius:14px; background:#fbfcf9; cursor:pointer; font-weight:800; font-size:15px; text-align:left; }
+    .check-item:hover { border-color:#8db6a0; }
+    .check-item .box { flex:0 0 auto; width:24px; height:24px; display:grid; place-items:center; border:2px solid #b8c6bb; border-radius:7px; color:transparent; font-size:15px; }
+    .check-item[aria-pressed="true"] { border-color:#8db6a0; background:var(--soft); }
+    .check-item[aria-pressed="true"] .box { border-color:var(--green); background:var(--green); color:#fff; }
+    .check-item.lit { border-color:#a99cd6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.16); }
+    .confirm-button { display:inline-flex; gap:8px; align-items:center; margin:4px 0 6px; padding:12px 18px; color:#fff; background:var(--green); font-size:15px; }
+    .confirm-button:hover { background:var(--dark); }
+
+    /* 安全要点：可见文本 */
+    .safety { margin:16px 0 4px; padding:14px 16px; border-radius:15px; background:var(--warm); color:#6b5326; }
+    .safety-title { display:block; font-size:12px; font-weight:900; letter-spacing:.05em; }
+    .safety ul { margin:8px 0 0; padding-left:20px; }
+    .safety li { margin:3px 0; font-size:14px; }
+
+    .feedback { min-height:26px; margin:12px 0 0; color:var(--green); font-weight:800; text-align:center; }
+    .feedback.bad { color:var(--bad); }
+    .lesson-actions { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-top:16px; }
+    .retry-button { padding:10px 14px; color:#657067; background:#f1f3ef; font-size:12px; }
+    .next-button { padding:11px 18px; color:#fff; background:var(--green); }
+    .next-button:hover { background:var(--dark); }
+    .next-button[disabled] { opacity:.4; cursor:not-allowed; }
+    .coach { display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }
+    .coach strong { flex:0 0 auto; }
+    body[data-mode="solo"] .coach { display:none; }
+
+    .complete { display:none; text-align:center; padding:32px 20px; border:1px solid var(--line); border-radius:24px; background:var(--paper); }
+    .complete.active { display:block; animation:rise .2s ease-out; }
+    .complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }
+    .complete h2 { margin:15px 0 5px; }
+    .complete .summary { color:var(--muted); max-width:560px; margin:0 auto; }
+    .stat { display:inline-flex; gap:16px; margin:16px 0 20px; padding:12px 16px; border-radius:14px; background:#fbfcf9; border:1px solid var(--line); font-size:13px; }
+    .stat b { color:var(--green); }
+    .complete-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+
+    @keyframes rise { from { opacity:0; transform:translateY(6px); } }
+    @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+    @media(max-width:620px){ .stage-nav { grid-template-columns:repeat(2,1fr); }.practice-head { flex-direction:column; }.help-buttons { justify-content:flex-start; }.check-list { grid-template-columns:1fr; }.chip { flex:1 1 45%; justify-content:center; } }
+    @media(prefers-reduced-motion:reduce){ * { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body data-mode="guided">
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">生活自理陪练课 · 约 12 分钟</span>
+      <h1>出门前的准备</h1>
+      <p>面向自闭症、语言障碍儿童与低龄儿童的生活流程训练。从起床到出门，把每天的步骤一段一段排清楚，再练一遍洗手和过马路。点一点就算完成，不用说出来。</p>
+      <div class="principles"><span>一次一步</span><span>点错不要紧</span><span>可以慢慢想</span><span>不强迫复述</span><span>接受近似的回应</span></div>
+    </div>
+  </header>
+  <main>
+    <!-- 开场屏：第一次使用本产品的用户，看完这一屏就知道左边聊天区和右边课件怎么联动 -->
+    <section class="start" id="startScreen">
+      <span class="step">第一次来 · 先看这里</span>
+      <h2>这个课怎么用</h2>
+      <p class="start-sub">右边是课本，左边是 AI 老师。下面这三件事都会在这节课里真的发生一次。</p>
+      <div class="howto">
+        <div><b>1</b><p>在右边按顺序点卡片<small>你每点一步，都会自动告诉左边的 AI 老师。</small></p></div>
+        <div><b>2</b><p>老师会回应你，也会读给你听<small>点课卡上的「听老师说」可以再来一遍。</small></p></div>
+        <div><b>3</b><p>老师还能直接翻你的课本<small>老师说一句「跳到第 3 关」，右边这一屏就会自己跳过去。</small></p></div>
+      </div>
+      <span class="step">谁来带这节课？</span>
+      <div class="mode-pick" id="modePick">
+        <button type="button" class="active" data-mode="guided">老师或家长带着练<small>适合刚开始、需要大人帮一把的孩子</small></button>
+        <button type="button" data-mode="solo">我自己练<small>孩子熟悉流程后，交给 AI 老师</small></button>
+      </div>
+      <div class="start-actions">
+        <button type="button" class="big-start" id="startButton">开始第一关 →</button>
+        <button type="button" class="demo-button" id="demoButton">试一试：让老师带我翻到下一关</button>
+      </div>
+      <p class="scope-note">本课是生活自理的陪练材料，用来给日常训练增加练习机会；它不做诊断，也不替代医生、治疗师或特教老师的专业支持。真实过马路请务必由大人陪同练习。</p>
+    </section>
+
+    <section class="progress-card" id="progressCard" hidden aria-label="课程进度">
+      <div class="progress-copy"><span>课程进度</span><strong id="progressText">1 / 4</strong></div>
+      <div class="track"><span id="progressFill"></span></div>
+      <nav class="stage-nav" id="stageNav">
+        <button type="button" class="active" data-goto="1">1 起床顺序</button><button type="button" data-goto="2">2 洗手六步</button><button type="button" data-goto="3">3 出门清单</button><button type="button" data-goto="4">4 过马路</button>
+      </nav>
+    </section>
+
+    <!-- 第 1 关 · 起床顺序 -->
+    <section class="stage" data-stage="1">
+      <div class="lesson-card">
+        <span class="step">第 1 关 · 起床以后</span>
+        <div class="scene">🌅</div>
+        <h2>早上起床后先做什么？</h2>
+        <p class="situation">从起床到出门，一共有六件事。按你平时做的顺序，一件一件点出来。</p>
+        <button type="button" class="speak-button" data-speak="早上起床以后，先做什么？按顺序一件一件点出来。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>按顺序点卡片</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button><button type="button" class="help-button" data-retry="1">↺ 重来</button></div></div>
+        <div class="order-target" aria-live="polite"><em>点下面的卡片，按顺序排在这里</em></div>
+        <div class="pool"></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>孩子点错时只说一句「前面还有一步没做」，把顺序留给他自己想，不要替他排。</span></div>
+        <div class="lesson-actions"><button type="button" class="next-button" data-next="2" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 2 关 · 洗手六步 -->
+    <section class="stage" data-stage="2">
+      <div class="lesson-card">
+        <span class="step">第 2 关 · 洗手</span>
+        <div class="scene">🧼</div>
+        <h2>洗手有六步</h2>
+        <p class="situation">洗手也有先后顺序。想一想，先做什么，后做什么，按顺序点出来。</p>
+        <button type="button" class="speak-button" data-speak="洗手有六步，按顺序点出来。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>按顺序点卡片</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button><button type="button" class="help-button" data-retry="2">↺ 重来</button></div></div>
+        <div class="order-target" aria-live="polite"><em>点下面的卡片，按顺序排在这里</em></div>
+        <div class="pool"></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>洗手可以真的在洗手池边做一遍：每点对一步，就跟着做一步，顺序记得更牢。</span></div>
+        <div class="lesson-actions"><button type="button" class="next-button" data-next="3" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 3 关 · 出门清单 -->
+    <section class="stage" data-stage="3">
+      <div class="lesson-card">
+        <span class="step">第 3 关 · 出门清单</span>
+        <div class="scene">🎒</div>
+        <h2>出门东西带齐了吗？</h2>
+        <p class="situation">要出门了。看看下面这几样，你是不是都带上了。带上的点一下，打上勾。</p>
+        <button type="button" class="speak-button" data-speak="出门前，看看东西都带齐了没有。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>点一下，把带上的勾起来</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 再看一眼清单</button></div></div>
+        <div class="check-list" id="checkList" role="group" aria-label="出门清单"></div>
+        <button type="button" class="confirm-button" id="confirm3" hidden>✅ 我确认，都带齐了</button>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>允许孩子先勾上、再看一眼、再自己确认。「再看一眼清单」是核对，不是作弊，请鼓励。</span></div>
+        <div class="lesson-actions"><button type="button" class="next-button" data-next="4" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 4 关 · 过马路 -->
+    <section class="stage" data-stage="4">
+      <div class="lesson-card">
+        <span class="step">第 4 关 · 过马路</span>
+        <div class="scene">🚦</div>
+        <h2>过马路，按安全顺序来</h2>
+        <p class="situation">过马路要记住几步。按安全的顺序把这些卡片排好，下面还有几条安全要点要记牢。</p>
+        <button type="button" class="speak-button" data-speak="过马路要按安全的顺序来，一步一步点出来。">🔊 听老师说</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>按安全顺序点卡片</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button><button type="button" class="help-button" data-retry="4">↺ 重来</button></div></div>
+        <div class="order-target" aria-live="polite"><em>点下面的卡片，按顺序排在这里</em></div>
+        <div class="pool"></div>
+        <div class="safety">
+          <span class="safety-title">安全要点 · 可以照着读一遍</span>
+          <ul>
+            <li>有红绿灯，红灯停、绿灯行。</li>
+            <li>没有大人牵着，不自己过马路。</li>
+            <li>只走斑马线，不跑、不回头。</li>
+          </ul>
+        </div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>真实过马路时，让孩子先停在斑马线边，再和你一起看左看右，最后牵着手走。安全要点照着念一遍即可。</span></div>
+        <div class="lesson-actions"><button type="button" class="next-button" data-finish disabled>完成本课 ✓</button></div>
+      </div>
+    </section>
+
+    <section class="complete" id="complete">
+      <div class="badge">✓</div>
+      <h2>出门前的准备都练完了</h2>
+      <p class="summary" id="summary"></p>
+      <div class="stat"><span>完成关卡 <b id="statDone">0 / 4</b></span><span>点错 <b id="statErrors">0</b> 次</span></div>
+      <div class="complete-actions">
+        <button type="button" class="help-button" data-review>🧾 请老师总结今天</button>
+        <button type="button" class="next-button" data-restart>再练一次</button>
+      </div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+      const TOTAL = 4;
+
+      // 各关顺序题的正确顺序（写在页面上，判分与讲解都以可见文本为准）。
+      const DATA = {
+        1: { seq: [
+          { id: 'wake', emoji: '⏰', label: '起床' },
+          { id: 'brush', emoji: '🪥', label: '刷牙洗脸' },
+          { id: 'dress', emoji: '👕', label: '穿衣服' },
+          { id: 'eat', emoji: '🍳', label: '吃早饭' },
+          { id: 'shoes', emoji: '👟', label: '穿鞋' },
+          { id: 'bag', emoji: '🎒', label: '背书包' },
+        ] },
+        2: { seq: [
+          { id: 'tap', emoji: '🚰', label: '打开水' },
+          { id: 'wet', emoji: '💧', label: '湿手' },
+          { id: 'soap', emoji: '🧼', label: '抹肥皂' },
+          { id: 'rub', emoji: '✋', label: '搓手心手背' },
+          { id: 'rinse', emoji: '🚿', label: '冲干净' },
+          { id: 'dry', emoji: '🧻', label: '擦干' },
+        ] },
+        4: { seq: [
+          { id: 'kerb', emoji: '🛑', label: '走到斑马线边' },
+          { id: 'left', emoji: '👈', label: '先看左' },
+          { id: 'right', emoji: '👉', label: '再看右' },
+          { id: 'hand', emoji: '🤝', label: '牵着大人的手' },
+          { id: 'cross', emoji: '🚶', label: '走过去' },
+        ] },
+      };
+      const IMG = { 1: '🌅', 2: '🧼', 4: '🚦' };
+      const STAGES = { 1: '起床顺序', 2: '洗手六步', 3: '出门清单', 4: '过马路' };
+
+      // 第 3 关：出门清单，全部带齐才出现确认。
+      const CHECK = [
+        { id: 'cup', emoji: '🥤', label: '水杯' },
+        { id: 'bag', emoji: '🎒', label: '书包' },
+        { id: 'key', emoji: '🔑', label: '钥匙' },
+        { id: 'hat', emoji: '🧢', label: '帽子' },
+        { id: 'hanky', emoji: '🧻', label: '手帕' },
+      ];
+
+      // 进度只存内存：刷新即重来。
+      let stage = 1;
+      let started = false;
+      let errors = 0;
+      let lastCmd = '';
+      const done = { 1: false, 2: false, 3: false, 4: false };
+      const orderState = { 1: { placed: [] }, 2: { placed: [] }, 4: { placed: [] } };
+      const wrongSeen = { 1: new Set(), 2: new Set(), 4: new Set() }; // 同一张卡片不重复计错
+      const wrongStreak = { 1: { id: '', n: 0 }, 2: { id: '', n: 0 }, 4: { id: '', n: 0 } };
+
+      // 与其它内置课件同一套上报协议：respond=true 时老师会主动回话。
+      function notify(action, spoken = '', respond = false) {
+        parent.postMessage({ type: 'aiteacher-learning-action', action, spoken, respond }, '*');
+      }
+
+      function stageRoot(n) { return $(`.stage[data-stage="${n}"]`); }
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function feedback(n, text, bad) {
+        const root = stageRoot(n);
+        if (!root) return;
+        const box = $('.feedback', root);
+        if (!box) return;
+        box.textContent = text;
+        box.classList.toggle('bad', !!bad);
+      }
+
+      function renderPool(n) {
+        const root = stageRoot(n);
+        if (!root) return;
+        const pool = $('.pool', root);
+        pool.innerHTML = '';
+        shuffle(DATA[n].seq).forEach(item => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'chip';
+          b.dataset.id = item.id;
+          b.setAttribute('aria-label', `${IMG[n]} ${item.label}`.trim());
+          b.innerHTML = `<span class="chip-emoji">${item.emoji}</span><span class="chip-text">${item.label}</span>`;
+          pool.appendChild(b);
+        });
+      }
+
+      function renderTarget(n) {
+        const root = stageRoot(n);
+        if (!root) return;
+        const target = $('.order-target', root);
+        const placed = orderState[n].placed;
+        if (!placed.length) {
+          target.innerHTML = '<em>点下面的卡片，按顺序排在这里</em>';
+          return;
+        }
+        const seq = DATA[n].seq;
+        target.innerHTML = placed.map((id, i) => {
+          const item = seq.find(x => x.id === id);
+          return `<span class="placed-chip"><b>${i + 1}</b>${item.emoji} ${item.label}</span>`;
+        }).join('');
+      }
+
+      function renderCheck() {
+        const list = $('#checkList');
+        if (!list) return;
+        list.innerHTML = '';
+        CHECK.forEach(item => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'check-item';
+          b.dataset.id = item.id;
+          b.setAttribute('aria-pressed', 'false');
+          b.innerHTML = `<span class="box" aria-hidden="true">✓</span><span class="chip-emoji">${item.emoji}</span><span class="chip-text">${item.label}</span>`;
+          list.appendChild(b);
+        });
+      }
+
+      function completeStage(n) {
+        if (done[n]) return;
+        done[n] = true;
+        const root = stageRoot(n);
+        const btn = root ? ($('.next-button', root) || $('[data-finish]', root)) : null;
+        if (btn) btn.disabled = false;
+        const nav = $(`.stage-nav button[data-goto="${n}"]`);
+        if (nav) nav.classList.add('done');
+        feedback(n, `第 ${n} 关全部完成，做得很好。`, false);
+        // 本关完成：关键节点，请老师主动回话。
+        notify(`第${n}关「${STAGES[n]}」完成`, `第 ${n} 关完成啦`, true);
+      }
+
+      function placeItem(n, id, revealed) {
+        const seq = DATA[n].seq;
+        const placed = orderState[n].placed;
+        if (placed.includes(id)) return false;
+        const item = seq.find(x => x.id === id);
+        if (!item) return false;
+        placed.push(id);
+        const chip = $(`.stage[data-stage="${n}"] .chip[data-id="${id}"]`);
+        if (chip) {
+          chip.disabled = true;
+          chip.classList.add('placed');
+          chip.classList.remove('lit');
+          if (revealed) chip.classList.add('revealed');
+        }
+        renderTarget(n);
+        feedback(n, revealed
+          ? `老师给出第 ${placed.length} 步：${item.label}`
+          : `第 ${placed.length} 步：${item.label} ✓`, false);
+        // 高频小事件：只记进上下文，不叫老师插话。
+        notify(`第${n}关${revealed ? '老师给出' : '排对'}第 ${placed.length} 步：${item.label}`);
+        if (placed.length === seq.length) completeStage(n);
+        return true;
+      }
+
+      function handleChip(n, chip) {
+        if (done[n] || !DATA[n]) return;
+        const seq = DATA[n].seq;
+        const placed = orderState[n].placed;
+        const id = chip.dataset.id;
+        if (placed.includes(id)) return;
+        const item = seq.find(x => x.id === id);
+        if (!item) return;
+        const expected = seq[placed.length].id;
+        if (id === expected) {
+          placeItem(n, id, false);
+          return;
+        }
+        // 温和反馈：不判对错语气，只提醒前面还有一步。
+        chip.classList.add('shake');
+        window.setTimeout(() => chip.classList.remove('shake'), 420);
+        feedback(n, `「${item.label}」再等等，前面还有一步没做。`, true);
+        if (!wrongSeen[n].has(id)) { wrongSeen[n].add(id); errors += 1; }
+        const st = wrongStreak[n];
+        st.n = st.id === id ? st.n + 1 : 1;
+        st.id = id;
+        if (st.n >= 2 && !done[n]) {
+          st.n = 0; st.id = '';
+          // 连错到阈值：请老师介入，别直接报整串答案。
+          notify(`第${n}关「${item.label}」被提前点错两次，正确顺序就在页面上。请用一句话告诉他前面先做哪一步，不要一次报出整串。`, '', true);
+        }
+      }
+
+      function handleCheck(btn) {
+        if (done[3]) return;
+        const id = btn.dataset.id;
+        const item = CHECK.find(x => x.id === id);
+        if (!item) return;
+        const on = btn.getAttribute('aria-pressed') !== 'true';
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.remove('lit');
+        const checked = $$('#checkList .check-item[aria-pressed="true"]').length;
+        feedback(3, on ? `${item.label} ✓ 带上了` : `${item.label} 先放下`, false);
+        notify(`第3关${on ? '勾选' : '放下'}了「${item.label}」，一共带齐 ${checked}/${CHECK.length}`);
+        const confirm = $('#confirm3');
+        if (checked === CHECK.length) {
+          confirm.hidden = false;
+          feedback(3, '清单看起来齐了。再看一眼，没问题就确认。', false);
+        } else if (confirm) {
+          confirm.hidden = true;
+        }
+      }
+
+      function lightEl(el) {
+        if (!el) return false;
+        $$('.lit').forEach(x => x.classList.remove('lit'));
+        el.classList.add('lit');
+        el.focus({ preventScroll: true });
+        return true;
+      }
+
+      function lightNext(n) {
+        if (!DATA[n]) return false;
+        const placed = orderState[n].placed;
+        const seq = DATA[n].seq;
+        if (placed.length >= seq.length) return false;
+        const chip = $(`.stage[data-stage="${n}"] .chip[data-id="${seq[placed.length].id}"]`);
+        return lightEl(chip);
+      }
+
+      function doLocalHint(n) {
+        if (done[n]) { feedback(n, '这一关已经完成啦，可以点下一步。', false); return; }
+        let ok = false;
+        if (n === 3) {
+          const first = $$('#checkList .check-item').find(el => el.getAttribute('aria-pressed') !== 'true');
+          ok = lightEl(first);
+        } else {
+          ok = lightNext(n);
+        }
+        if (!ok) feedback(n, '这一关已经准备好了，可以直接点下一步。', false);
+        // 主动求助：请老师出声讲解这一步。
+        notify(`第${n}关主动要提示`, '', true);
+      }
+
+      function retryStage(n) {
+        if (done[n]) { feedback(n, '这一关已经完成啦，可以点下一步。', false); return; }
+        orderState[n].placed = [];
+        wrongSeen[n].clear();
+        wrongStreak[n] = { id: '', n: 0 };
+        $$(`.stage[data-stage="${n}"] .chip`).forEach(el => {
+          el.disabled = false;
+          el.classList.remove('placed', 'revealed', 'lit', 'shake');
+        });
+        renderPool(n);
+        renderTarget(n);
+        feedback(n, '重新来一遍，按顺序慢慢点。', false);
+        notify(`第${n}关重来一遍`);
+      }
+
+      function ensureStarted() {
+        if (started) return;
+        started = true;
+        $('#startScreen').style.display = 'none';
+        $('#progressCard').hidden = false;
+      }
+
+      function go(index, options = {}) {
+        ensureStarted();
+        const n = Math.max(1, Math.min(TOTAL, Number(index) || 1));
+        stage = n;
+        lastCmd = ''; // 换关后，同一条指令可以再生效一次
+        $$('.stage').forEach(node => node.classList.toggle('active', node.dataset.stage === String(n)));
+        $$('.stage-nav button').forEach(node => node.classList.toggle('active', node.dataset.goto === String(n)));
+        $('#progressText').textContent = `${n} / ${TOTAL}`;
+        $('#progressFill').style.width = `${(n / TOTAL) * 100}%`;
+        $('#complete').classList.remove('active');
+        if (options.fromTeacher) feedback(n, `老师把你带到了第 ${n} 关：${STAGES[n]}`, false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        notify(`进入第${n}关：${STAGES[n]}`);
+      }
+
+      function finish() {
+        $$('.stage').forEach(node => node.classList.remove('active'));
+        $('#complete').classList.add('active');
+        $('#statErrors').textContent = String(errors);
+        $('#statDone').textContent = `${[1, 2, 3, 4].filter(n => done[n]).length} / 4`;
+        $('#summary').textContent = errors === 0
+          ? '今天四关一次都没错，出门的流程你记得很牢。'
+          : `今天一共点错 ${errors} 次，不过每一步最后都排对了；顺序就是要多练几遍才顺手。`;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // 整课完成：请老师总结。
+        notify(`完成了「出门前的准备」全部四关，共点错 ${errors} 次`, '', true);
+      }
+
+      function restartAll() {
+        errors = 0;
+        [1, 2, 3, 4].forEach(n => { done[n] = false; });
+        [1, 2, 4].forEach(n => {
+          orderState[n].placed = [];
+          wrongSeen[n].clear();
+          wrongStreak[n] = { id: '', n: 0 };
+          renderPool(n);
+          renderTarget(n);
+        });
+        $$('#checkList .check-item').forEach(el => el.setAttribute('aria-pressed', 'false'));
+        const confirm = $('#confirm3');
+        if (confirm) confirm.hidden = true;
+        $$('.next-button').forEach(el => { el.disabled = true; });
+        $$('.stage-nav button').forEach(el => el.classList.remove('done'));
+        $$('.feedback').forEach(el => { el.textContent = ''; el.classList.remove('bad'); });
+        $('#complete').classList.remove('active');
+        go(1);
+        notify('从头再练一次');
+      }
+
+      // 聊天页通过注入的桥接脚本调用这里：老师可以翻关、要提示、公布下一步。
+      window.__aiteacherCmd = function ({ action, value }) {
+        try {
+          const key = `${action}:${String(value == null ? '' : value).trim()}`;
+          if (key === lastCmd) return true; // 幂等：同一条指令重复到达不再叠加
+          lastCmd = key;
+          if (action === 'step') {
+            const target = parseInt(value, 10);
+            if (!(target >= 1 && target <= TOTAL)) return false;
+            go(target, { fromTeacher: true });
+            return true;
+          }
+          const n = stage;
+          if (done[n]) return false;
+          if (action === 'hint') {
+            let ok = false;
+            if (n === 3) {
+              const first = $$('#checkList .check-item').find(el => el.getAttribute('aria-pressed') !== 'true');
+              ok = lightEl(first);
+            } else {
+              ok = lightNext(n);
+            }
+            if (ok) notify(`老师在第${n}关给了下一步提示`);
+            return ok;
+          }
+          if (action === 'reveal') {
+            if (n === 3) {
+              $$('#checkList .check-item').forEach(el => el.setAttribute('aria-pressed', 'true'));
+              const confirm = $('#confirm3');
+              if (confirm) confirm.hidden = false;
+              feedback(3, '老师把清单都勾上了，再看一眼就可以确认。', false);
+              notify('老师在第3关公布了清单答案');
+              return true;
+            }
+            // 顺序关：一步步给出下一个应做的步骤。
+            return lightNext(n) ? placeItem(n, DATA[n].seq[orderState[n].placed.length].id, true) : false;
+          }
+          return false;
+        } catch (_) {
+          return false; // 绝不抛异常，交给桥接层兜底
+        }
+      };
+
+      document.addEventListener('click', event => {
+        const chip = event.target.closest('.chip');
+        if (chip) {
+          const root = chip.closest('.stage');
+          if (root) handleChip(Number(root.dataset.stage), chip);
+          return;
+        }
+
+        const check = event.target.closest('.check-item');
+        if (check) { handleCheck(check); return; }
+
+        if (event.target.closest('#confirm3')) { completeStage(3); return; }
+
+        const speak = event.target.closest('[data-speak]');
+        if (speak) notify('点击了听老师说', speak.dataset.speak);
+
+        const hint = event.target.closest('[data-hint]');
+        if (hint) {
+          const root = hint.closest('.stage');
+          doLocalHint(root ? Number(root.dataset.stage) : stage);
+          return;
+        }
+
+        const retry = event.target.closest('[data-retry]');
+        if (retry) { retryStage(Number(retry.dataset.retry)); return; }
+
+        const next = event.target.closest('[data-next]');
+        if (next) { go(Number(next.dataset.next)); return; }
+
+        if (event.target.closest('[data-finish]')) { finish(); return; }
+        if (event.target.closest('[data-review]')) { notify('请老师总结今天的四关和出门的安全要点', '', true); return; }
+        if (event.target.closest('[data-restart]')) { restartAll(); return; }
+
+        const nav = event.target.closest('.stage-nav [data-goto]');
+        if (nav) { go(Number(nav.dataset.goto)); return; }
+      });
+
+      $('#startButton').addEventListener('click', () => {
+        ensureStarted();
+        go(1);
+        notify('开始了「出门前的准备」，现在在第1关：起床顺序', '', true);
+      });
+
+      // 演示反向链路：老师只要发 [[step:2]]，这一屏就会真的跳过去。
+      $('#demoButton').addEventListener('click', () => {
+        ensureStarted();
+        notify('请求老师把我带到下一关（这是第 3 步演示：老师说跳，课件就跳）', '', true);
+      });
+
+      $('#modePick').addEventListener('click', event => {
+        const button = event.target.closest('[data-mode]');
+        if (!button) return;
+        $$('#modePick button').forEach(node => node.classList.toggle('active', node === button));
+        document.body.dataset.mode = button.dataset.mode;
+        notify(button.dataset.mode === 'solo'
+          ? '切换到「我自己练」：把节奏交给孩子和 AI 老师，不再显示成人提示'
+          : '切换到「老师或家长带着练」：显示每一步的成人提示');
+      });
+
+      // 初始化：渲染卡片池与清单，先停在开场屏，不主动上报任何带朗读的事件。
+      [1, 2, 4].forEach(n => { renderPool(n); renderTarget(n); });
+      renderCheck();
+    })();
+  </script>
+
+  <!-- 本课的能力清单与教学须知。公共层（提示词/路由/前端）不允许出现本课的学科内容，
+       它们只读这里。协议见 docs/material-protocol.md 第 3 节。 -->
+  <script type="application/aiteacher+json" id="aiteacher-manifest">
+  {
+    "schema": 1,
+    "commands": ["hint", "reveal", "step"],
+    "teacher_notes": "本课是「日常生活流程与自理」训练，共 4 关：1. 起床顺序（起床→刷牙洗脸→穿衣服→吃早饭→穿鞋→背书包）；2. 洗手六步（打开水→湿手→抹肥皂→搓手心手背→冲干净→擦干）；3. 出门清单（水杯、书包、钥匙、帽子、手帕都带齐）；4. 过马路（走到斑马线边→先看左→再看右→牵着大人的手→走过去）。教学原则：1. 低压力、可等待，孩子点错不批评，用一句话提示「前面还有哪一步」，不要直接报整串答案。2. 接受近似回应：只要点到正确的卡片就算成功，不要求他把步骤说出来或复述，不强迫对视、不要求坐好。3. 顺序题只在把后面的步骤提前时算错；同一张卡片重复点错不重复记错。4. 每关完成后用一句人话总结本关顺序或安全要点，再进入下一关。5. 第 3 关是核对清单，允许孩子先勾选、再看一眼、再自己确认，「再看一眼清单」不算作弊。6. 第 4 关务必讲清安全要点：红灯停绿灯行、没有大人牵手不独自过马路、只走斑马线、不跑不回头。7. 真实过马路请照护者在旁陪同练习。8. 若判断输入明显来自照护者，改用简短成人语言给建议。",
+    "command_guide": {
+      "hint": "本课：给当前顺序题的下一步卡片描紫框并高亮（如「穿衣服」），或在第 3 关标出还没勾选的物品。",
+      "reveal": "本课：把当前顺序题的下一步直接排进序列并标成老师给出；第 3 关则勾齐全部清单。",
+      "step": "本课共 4 关，值填 1—4 的阿拉伯数字。"
+    }
+  }
+  </script>
+</body>
+</html>

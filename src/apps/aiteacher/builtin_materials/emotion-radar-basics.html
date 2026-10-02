@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的情绪小雷达 · 情绪识别与自我调节体验课</title>
+  <style>
+    :root { --ink:#203129; --muted:#66736b; --line:#dce5dd; --green:#26705b; --dark:#1d5848; --soft:#e9f4ee; --purple:#6657a8; --purple-soft:#f1eefb; --warm:#fff7e8; --paper:#fff; --canvas:#f4f6f1; --bad:#b4453a; --bad-soft:#fdf0ee; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font:16px/1.7 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif; }
+    button { font:inherit; color:inherit; cursor:pointer; }
+    button:focus-visible { outline:3px solid rgba(38,112,91,.3); outline-offset:3px; }
+    .hero { padding:clamp(26px,6vw,52px) clamp(18px,5vw,52px); color:#fff; background:linear-gradient(135deg,#205c7a,#3b7fa0); }
+    .hero-inner, main { width:min(920px,100%); margin:auto; }
+    .eyebrow { display:inline-flex; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.16); font-size:12px; font-weight:800; letter-spacing:.08em; }
+    h1 { margin:12px 0 8px; font-size:clamp(28px,6vw,46px); line-height:1.15; }
+    .hero p { max-width:680px; margin:0; color:rgba(255,255,255,.9); font-size:clamp(15px,2.5vw,18px); }
+    .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .principles span { padding:7px 10px; border:1px solid rgba(255,255,255,.22); border-radius:10px; background:rgba(255,255,255,.08); font-size:12px; }
+    main { padding:18px clamp(14px,4vw,30px) 54px; }
+
+    /* 开场屏 */
+    .start { padding:clamp(20px,4vw,32px); border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .start h2 { margin:6px 0 4px; font-size:clamp(22px,4.4vw,30px); }
+    .start .start-sub { margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .howto { display:grid; gap:10px; margin:18px 0; }
+    .howto div { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:#f2f6f1; }
+    .howto b { flex:0 0 auto; width:24px; height:24px; display:grid; place-items:center; border-radius:8px; color:#fff; background:var(--green); font-size:13px; }
+    .howto p { margin:0; font-size:14px; }
+    .howto small { display:block; color:var(--muted); font-size:12px; }
+    .start-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px; }
+    .big-start { padding:14px 22px; border:0; border-radius:14px; color:#fff; background:var(--green); font-weight:900; font-size:17px; }
+    .big-start:hover { background:var(--dark); }
+    .scope-note { margin:14px 0 0; padding:11px 13px; border-radius:12px; background:var(--warm); color:#765c2d; font-size:12px; }
+
+    /* 进度与关卡导航 */
+    .progress-card { position:sticky; top:0; z-index:5; margin:0 0 16px; padding:13px; border:1px solid var(--line); border-radius:0 0 18px 18px; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(39,55,45,.08); }
+    .progress-copy { display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; }.progress-copy strong { color:var(--green); }
+    .track { height:7px; overflow:hidden; border-radius:999px; background:#e4e9e2; }.track span { display:block; width:0; height:100%; border-radius:inherit; background:var(--green); transition:width .25s; }
+    .stage-nav { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:12px; }
+    .stage-nav button { min-height:46px; border:1px solid transparent; border-radius:11px; padding:6px 6px; color:var(--muted); background:#f2f4f0; font-size:12px; font-weight:800; }
+    .stage-nav button.active { color:var(--dark); border-color:#bcd4c4; background:var(--soft); }
+    .stage-nav button.done { color:var(--green); }
+
+    .stage { display:none; }.stage.active { display:block; animation:rise .2s ease-out; }
+    .lesson-card, .practice-card { border:1px solid var(--line); border-radius:24px; background:var(--paper); box-shadow:0 16px 45px rgba(38,54,43,.07); }
+    .lesson-card { padding:clamp(22px,5vw,40px); background:linear-gradient(135deg,#e7f3ec,#f6f9f4); position:relative; overflow:hidden; }
+    .lesson-card::after { content:""; position:absolute; right:-55px; top:-65px; width:210px; height:210px; border:1px solid rgba(38,112,91,.12); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.17),0 0 0 48px rgba(255,255,255,.1); }
+    .step { color:var(--green); font-size:12px; font-weight:900; letter-spacing:.07em; }
+    .lesson-card h2 { max-width:640px; margin:8px 0; font-size:clamp(25px,4.6vw,35px); line-height:1.2; }
+    .lesson-card p { max-width:640px; margin:0 0 16px; color:#53635a; }
+    .speak-button, .help-button, .next-button, .retry-button { border:0; border-radius:11px; font-weight:800; }
+    .speak-button { padding:10px 14px; color:var(--dark); background:#fff; box-shadow:0 4px 16px rgba(38,112,91,.08); }
+    .practice-card { margin-top:16px; padding:clamp(20px,4vw,32px); }
+    .practice-head { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; }
+    .practice-label { color:var(--green); font-size:11px; font-weight:900; letter-spacing:.08em; }
+    .practice-head h3 { margin:5px 0 0; font-size:clamp(19px,4vw,25px); }
+    .help-buttons { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .help-button { padding:9px 12px; color:#514771; background:#f4f2fb; border:1px solid #ded7f0; font-size:12px; }
+    .help-button:hover { background:var(--purple-soft); }
+
+    /* 情绪卡（第 1 关） */
+    .emo-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:20px 0 8px; }
+    .emo-card { border:1px solid var(--line); border-radius:18px; padding:16px 14px; background:#fbfcf9; display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    .emo-card .big { font-size:40px; line-height:1; }
+    .emo-card strong { font-size:18px; }
+    .emo-card small { color:var(--muted); font-size:12px; line-height:1.5; }
+    .emo-card.joy { border-color:#f0d98c; background:#fffbea; }.emo-card.joy strong { color:#b07d08; }
+    .emo-card.sad { border-color:#bcd3ef; background:#f2f7ff; }.emo-card.sad strong { color:#3868b0; }
+    .emo-card.angry { border-color:#f0bdb4; background:#fff4f2; }.emo-card.angry strong { color:#c04a3a; }
+    .emo-card.scared { border-color:#c9bff0; background:#f6f3ff; }.emo-card.scared strong { color:#6c5cc0; }
+    .emo-card.read { box-shadow:0 0 0 3px rgba(38,112,91,.14); border-color:#9dc6b3; }
+    .emo-card .read-tag { font-size:11px; color:var(--green); font-weight:800; min-height:15px; }
+    .emo-card .mini-speak { padding:7px 10px; border-radius:9px; border:1px solid var(--line); background:#fff; color:var(--dark); font-size:12px; font-weight:800; }
+
+    /* 选择按钮（第 2 / 4 关） */
+    .choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0 10px; }
+    .choice { min-height:110px; border:1px solid var(--line); border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#fbfcf9; font-weight:800; }
+    .choice:hover { border-color:#8db6a0; background:var(--soft); }
+    .choice .emoji { font-size:30px; }
+    .choice strong { font-size:16px; }
+    .choice.lit { border-color:#c3b8e6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.14); }
+    .choice.correct { border-color:#8db6a0; background:var(--soft); }
+    .choice.revealed { border-color:#c3b8e6; background:var(--purple-soft); }
+    .choice.dimmed { opacity:.35; }
+    .choice.chosen { border-color:#8db6a0; background:var(--soft); box-shadow:0 0 0 3px rgba(38,112,91,.14); }
+    .situation-box { margin:14px 0 0; padding:14px 16px; border-radius:14px; background:#f2f6f1; text-align:center; }
+    .situation-box .emoji { font-size:34px; }
+    .situation-box p { margin:4px 0 0; font-size:18px; font-weight:800; }
+    .situation-box small { color:var(--muted); font-size:12px; }
+
+    /* 配对（第 3 关） */
+    .pair-area { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0 10px; }
+    .pair-col h4 { margin:0 0 8px; color:var(--muted); font-size:12px; font-weight:900; letter-spacing:.05em; }
+    .pair-col .chips { display:flex; flex-direction:column; gap:8px; }
+    .chip { border:1px solid var(--line); border-radius:14px; padding:12px 14px; background:#fbfcf9; font-weight:800; display:flex; align-items:center; gap:10px; }
+    .chip .emoji { font-size:22px; }
+    .chip.selected { border-color:#c3b8e6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.16); }
+    .chip.matched { border-color:#8db6a0; background:var(--soft); opacity:.92; }
+    .chip.matched::after { content:"✓"; margin-left:auto; color:var(--green); font-weight:900; }
+    .chip.wrongshake { animation:shake .32s ease; }
+
+    /* 做法（第 4 关） */
+    .action-rows { display:flex; flex-direction:column; gap:14px; margin:18px 0 10px; }
+    .action-row { border:1px solid var(--line); border-radius:16px; padding:12px 14px; background:#fbfcf9; }
+    .action-row .row-title { display:flex; align-items:center; gap:8px; font-weight:900; margin-bottom:8px; }
+    .action-row .row-title .emoji { font-size:22px; }
+    .action-row .opts { display:flex; flex-wrap:wrap; gap:8px; }
+    .action-row .opt { padding:9px 13px; border:1px solid var(--line); border-radius:11px; background:#fff; font-size:13px; font-weight:800; }
+    .action-row .opt.chosen { border-color:#8db6a0; background:var(--soft); }
+    .action-row .opt.lit { border-color:#c3b8e6; background:var(--purple-soft); box-shadow:0 0 0 3px rgba(102,87,168,.14); }
+    .action-row.done .row-title::after { content:"已选好 ✓"; margin-left:auto; color:var(--green); font-size:11px; }
+
+    .template-box { margin:18px 0 6px; padding:16px; border-radius:16px; background:var(--purple-soft); }
+    .template-box h4 { margin:0 0 10px; color:#514771; font-size:14px; }
+    .tpl-line { font-size:20px; font-weight:900; color:#3c3358; letter-spacing:.02em; margin:6px 0 10px; }
+    .tpl-line .slot { display:inline-block; min-width:2.5em; border-bottom:2px dashed #a99cd6; padding:0 6px; }
+    .tpl-groups { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+    .tpl-groups .grp-label { font-size:12px; color:#8b86a3; font-weight:900; }
+    .tpl-groups .grp-opts { display:flex; flex-wrap:wrap; gap:7px; }
+    .tpl-groups .gopt { padding:7px 11px; border:1px solid #d7d0ed; border-radius:10px; background:#fff; color:#514771; font-size:12px; font-weight:800; }
+    .tpl-groups .gopt.chosen { border-color:#a99cd6; background:#fff; box-shadow:0 0 0 3px rgba(102,87,168,.16); }
+
+    .reward { margin:14px 0 0; padding:13px 15px; border-radius:14px; background:var(--soft); color:var(--dark); font-weight:800; }
+    .reward[hidden] { display:none; }
+    .feedback { min-height:28px; margin:12px 0 0; color:var(--green); font-weight:800; text-align:center; }
+    .feedback.bad { color:var(--bad); }
+    .lesson-actions { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-top:16px; }
+    .retry-button { padding:10px 14px; color:#657067; background:#f1f3ef; font-size:12px; }
+    .next-button { padding:11px 18px; color:#fff; background:var(--green); }
+    .next-button:hover { background:var(--dark); }
+    .next-button[disabled] { opacity:.4; cursor:not-allowed; }
+    .coach { display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:13px 14px; border-radius:13px; color:#765c2d; background:var(--warm); font-size:12px; }
+    .coach strong { flex:0 0 auto; }
+
+    .complete { display:none; text-align:center; padding:32px 20px; border:1px solid var(--line); border-radius:24px; background:var(--paper); }
+    .complete.active { display:block; animation:rise .2s ease-out; }
+    .complete .badge { width:64px; height:64px; margin:auto; display:grid; place-items:center; border-radius:20px; color:#fff; background:var(--green); font-size:28px; }
+    .complete h2 { margin:15px 0 5px; }
+    .complete p { color:var(--muted); }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:18px 0; text-align:left; }
+    .stat-grid div { padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:#fbfcf9; font-size:12px; }
+    .stat-grid b { display:block; color:var(--green); font-size:16px; }
+    .complete-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+    @keyframes rise { from { opacity:0; transform:translateY(6px); } }
+    @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+    @media(max-width:640px){ .stage-nav { grid-template-columns:repeat(2,1fr); }.choices { grid-template-columns:1fr; }.choice { min-height:86px; }.pair-area { grid-template-columns:1fr; }.practice-head { flex-direction:column; }.help-buttons { justify-content:flex-start; } }
+    @media(prefers-reduced-motion:reduce){ * { animation:none!important; transition:none!important; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">情绪体验课 · 约 12 分钟</span>
+      <h1>我的情绪小雷达</h1>
+      <p>情绪识别与自我调节体验课。认识开心、难过、生气、害怕四种感觉，学着看懂别人和自己身体发出的信号，再挑一个让自己舒服一点的办法。点一点就够了，不用说得很好。</p>
+      <div class="principles"><span>不强迫对视</span><span>一次一个问题</span><span>先等一等</span><span>接受近似回应</span><span>点选就算表达</span></div>
+    </div>
+  </header>
+  <main>
+    <!-- 开场屏 -->
+    <section class="start" id="startScreen">
+      <span class="step">第一次来 · 先看这里</span>
+      <h2>这个课怎么用</h2>
+      <p class="start-sub">右边是课本，左边是 AI 老师。下面三件事都会在这节课里真的发生一次。</p>
+      <div class="howto">
+        <div><b>1</b><p>在右边点一点<small>你每一次点选，都会自动告诉左边的 AI 老师。</small></p></div>
+        <div><b>2</b><p>老师会回应你，也会读给你听<small>点卡片上的「听老师读」，可以再听一遍。</small></p></div>
+        <div><b>3</b><p>老师还能直接帮你翻课本<small>老师说一句「我们跳到第 2 关」，右边就会自己跳过去。</small></p></div>
+      </div>
+      <div class="start-actions">
+        <button type="button" class="big-start" id="startButton">开始第一关 →</button>
+      </div>
+      <p class="scope-note">这是一套情绪识别与自我调节的陪练材料，用来给日常练习提供更多机会；它不做诊断，也不替代医生、治疗师或特教老师的专业支持。</p>
+    </section>
+
+    <section class="progress-card" id="progressCard" hidden aria-label="课程进度">
+      <div class="progress-copy"><span>课程进度</span><strong id="progressText">1 / 4</strong></div>
+      <div class="track"><span id="progressFill"></span></div>
+      <nav class="stage-nav" id="stageNav">
+        <button type="button" class="active" data-goto="1">1 认识情绪</button>
+        <button type="button" data-goto="2">2 他是什么感觉</button>
+        <button type="button" data-goto="3">3 身体在提醒我</button>
+        <button type="button" data-goto="4">4 我可以怎么做</button>
+      </nav>
+    </section>
+
+    <!-- 第 1 关 · 认识情绪 -->
+    <section class="stage" data-stage="1">
+      <div class="lesson-card">
+        <span class="step">第 1 关 · 认识情绪</span>
+        <h2>四种感觉长什么样</h2>
+        <p>开心、难过、生气、害怕，是我们都有的四种感觉。慢慢看，每张卡都能点「听老师读」。</p>
+        <button type="button" class="speak-button" data-speak="开心、难过、生气、害怕，这四种感觉我们都有。">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">慢慢认识</span><h3>点一张卡，听一听</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="emo-cards" id="emoCards"></div>
+        <p class="feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>不要求孩子复述情绪名，也不要求他模仿表情。能指一指、点一点，就已经在认识了。可以轻轻问一句「你什么时候会觉得这样呀」，说完就等。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一关再看一遍</button><button type="button" class="next-button" data-next="2">下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 2 关 · 他现在是什么感觉 -->
+    <section class="stage" data-stage="2">
+      <div class="lesson-card">
+        <span class="step">第 2 关 · 他是什么感觉</span>
+        <h2>猜猜他现在是什么感觉</h2>
+        <p>看一看发生的事，想一想这个人心里是什么感觉。选错也没关系，慢慢来。</p>
+        <button type="button" class="speak-button" data-speak="看一看发生的事，猜猜他现在是什么感觉。">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3 id="s2prompt">猜一猜：他现在是什么感觉？</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="situation-box"><span class="emoji" id="s2emoji">🧸</span><p id="s2situation">玩具被拿走了</p><small>想一想，他身体里是什么感觉</small></div>
+        <div class="choices" id="s2choices"></div>
+        <p class="feedback" id="s2feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>孩子选错了，先别急着纠正，可以指着表情问「你看他的眉毛和嘴巴，像是在开心吗」。让孩子自己慢慢找线索。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一关再练一遍</button><button type="button" class="next-button" data-next="3" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 3 关 · 身体在提醒我 -->
+    <section class="stage" data-stage="3">
+      <div class="lesson-card">
+        <span class="step">第 3 关 · 身体在提醒我</span>
+        <h2>身体会偷偷提醒我们</h2>
+        <p>生气的时候手会握拳头，害怕的时候心跳会变快。把每种感觉和它的身体信号连成一对。</p>
+        <button type="button" class="speak-button" data-speak="生气的时候手会握拳头，害怕的时候心跳会变快。">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>先点一种感觉，再点它的身体信号</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="pair-area">
+          <div class="pair-col"><h4>感觉</h4><div class="chips" id="s3emotions"></div></div>
+          <div class="pair-col"><h4>身体的信号</h4><div class="chips" id="s3signals"></div></div>
+        </div>
+        <p class="feedback" id="s3feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>连错了就轻轻说「好像不是这一对，再试试」。允许孩子反复试，找到正确的那一对本身就是学习。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一关再练一遍</button><button type="button" class="next-button" data-next="4" disabled>下一关 →</button></div>
+      </div>
+    </section>
+
+    <!-- 第 4 关 · 我可以怎么做 -->
+    <section class="stage" data-stage="4">
+      <div class="lesson-card">
+        <span class="step">第 4 关 · 我可以怎么做</span>
+        <h2>有感觉的时候，我可以做什么</h2>
+        <p>每种感觉都有好几个办法，让自己舒服一点。给每种感觉挑一个你喜欢的办法。</p>
+        <button type="button" class="speak-button" data-speak="每种感觉都有办法让自己舒服一点，挑一个你喜欢的。">🔊 听老师读</button>
+      </div>
+      <div class="practice-card">
+        <div class="practice-head"><div><span class="practice-label">现在试一试</span><h3>给每种感觉，挑一个办法</h3></div>
+          <div class="help-buttons"><button type="button" class="help-button" data-hint>💡 要提示</button></div></div>
+        <div class="action-rows" id="s4rows"></div>
+        <div class="template-box" id="s4template" hidden>
+          <h4>跟老师说一句话</h4>
+          <p class="tpl-line">我现在觉得 <span class="slot" id="tplFeeling">____</span>，因为 <span class="slot" id="tplBecause">____</span>，我想要 <span class="slot" id="tplWant">____</span>。</p>
+          <div class="tpl-groups">
+            <div><div class="grp-label">我现在觉得（挑一个）</div><div class="grp-opts" data-tpl="feeling"></div></div>
+            <div><div class="grp-label">因为（挑一个）</div><div class="grp-opts" data-tpl="because"></div></div>
+            <div><div class="grp-label">我想要（挑一个）</div><div class="grp-opts" data-tpl="want"></div></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+            <button type="button" class="speak-button" id="tplSpeak">🔊 听老师读这句话</button>
+            <button type="button" class="help-button" id="tplSaid">✅ 我说给老师听了</button>
+          </div>
+        </div>
+        <p class="feedback" id="s4feedback"></p>
+        <div class="coach"><strong>带着练</strong><span>孩子挑的办法就是好办法，别评价「对错」。最后那句表达句，他愿意说就说，不愿意说就一起念，或者由你替他念出来，都算完成。</span></div>
+        <div class="lesson-actions"><button type="button" class="retry-button" data-replay>这一关再练一遍</button><button type="button" class="next-button" data-finish disabled>完成本课 ✓</button></div>
+      </div>
+    </section>
+
+    <section class="complete" id="complete">
+      <div class="badge">✓</div>
+      <h2>今天的情绪小雷达练完了</h2>
+      <p>你已经认识了四种感觉，也学会了看懂身体信号、给自己挑一个舒服的办法。下面的数字只存在这一页里，刷新就清零。把它们交给老师吧。</p>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="complete-actions">
+        <button type="button" class="help-button" data-review>🧾 请老师总结今天</button>
+        <button type="button" class="help-button" data-next-plan>➜ 问老师在家还能练什么</button>
+        <button type="button" class="next-button" data-restart>再练一次</button>
+      </div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+      const TOTAL = 4;
+      const TITLES = { 1: '认识情绪', 2: '他是什么感觉', 3: '身体在提醒我', 4: '我可以怎么做' };
+
+      const EMOTIONS = [
+        { name: '开心', emoji: '😊', cls: 'joy', desc: '嘴角往上扬，眼睛亮亮的，想笑。', read: '开心的时候，嘴角往上扬，眼睛亮亮的，会想笑。' },
+        { name: '难过', emoji: '😢', cls: 'sad', desc: '嘴角往下，眼睛想哭，肩膀耷拉下来。', read: '难过的时候，嘴角往下，可能会想哭。' },
+        { name: '生气', emoji: '😠', cls: 'angry', desc: '眉毛皱起来，手握成拳头，脸发红。', read: '生气的时候，眉毛皱起来，手会握成拳头。' },
+        { name: '害怕', emoji: '😨', cls: 'scared', desc: '眼睛睁得大大的，心跳变快，想躲起来。', read: '害怕的时候，眼睛睁大，心跳会变快。' },
+      ];
+
+      const SITUATIONS = [
+        { text: '玩具被拿走了', answer: '生气', emoji: '🧸', wrongHint: '想一想：东西被拿走了，他心里是暖暖的，还是有点火大？' },
+        { text: '要去一个没去过的地方', answer: '害怕', emoji: '🚪', wrongHint: '想一想：到一个新地方，他是好奇开心，还是有点紧张？' },
+        { text: '最好的朋友来抱他', answer: '开心', emoji: '🤗', wrongHint: '想一想：好朋友来抱他，他心里是暖暖的，还是有点难过？' },
+        { text: '心爱的小动物生病了', answer: '难过', emoji: '🐱', wrongHint: '想一想：心爱的小动物不舒服，他心里是开心，还是有点难过？' },
+      ];
+
+      const PAIRS = [
+        { emotion: '开心', signal: '嘴角上扬', emoji: '😊', sigEmoji: '🙂' },
+        { emotion: '难过', signal: '想哭', emoji: '😢', sigEmoji: '💧' },
+        { emotion: '生气', signal: '握拳头', emoji: '😠', sigEmoji: '✊' },
+        { emotion: '害怕', signal: '心跳变快', emoji: '😨', sigEmoji: '💓' },
+      ];
+
+      const ACTIONS = {
+        '开心': ['和好朋友分享', '大声笑一笑', '记下这份开心'],
+        '难过': ['找大人说', '抱抱玩偶', '听一首安静的歌'],
+        '生气': ['深呼吸', '去安静角待一会儿', '数到十'],
+        '害怕': ['找大人说', '抱抱玩偶', '深呼吸'],
+      };
+
+      const TPL_FEELINGS = ['开心', '难过', '生气', '害怕'];
+      const TPL_BECAUSES = ['玩具被拿走了', '要去一个新地方', '我想一个人待一会儿', '我想和你玩'];
+      const TPL_WANTS = ['抱抱', '安静待一会儿', '有人帮我', '说说话'];
+
+      let level = 1;
+      let lastCmd = '';
+      let readCount = 0;
+
+      // 第 2 关状态
+      let s2Index = 0;
+      const s2Solved = SITUATIONS.map(() => false);
+      const s2WrongSets = SITUATIONS.map(() => new Set());
+      const s2Helped = SITUATIONS.map(() => false);
+      let s2AdvanceTimer = null;
+
+      // 第 3 关状态
+      const s3Matched = new Set();
+      const s3WrongPairs = new Set();
+      let s3Helped = false;
+      let s3Pending = null;
+
+      // 第 4 关状态
+      const s4Chosen = {};   // emotion -> action
+      const tplPicked = { feeling: '', because: '', want: '' };
+
+      function notify(action, spoken = '', respond = false) {
+        parent.postMessage({ type: 'aiteacher-learning-action', action, spoken, respond }, '*');
+      }
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function setFeedback(text, bad) {
+        const host = $('.stage.active');
+        const box = host ? $('.feedback', host) : null;
+        if (!box) return;
+        box.textContent = text;
+        box.classList.toggle('bad', !!bad);
+      }
+
+      function stageEl(index) { return $(`.stage[data-stage="${index}"]`); }
+
+      function gate(index, enabled) {
+        const host = stageEl(index);
+        const btn = $('.next-button', host);
+        if (btn) btn.disabled = !enabled;
+        const nav = $(`.stage-nav button[data-goto="${index}"]`);
+        if (nav && enabled) nav.classList.add('done');
+      }
+
+      function go(index, opts = {}) {
+        level = Number(index) || 1;
+        $$('.stage').forEach(n => n.classList.toggle('active', n.dataset.stage === String(level)));
+        $$('.stage-nav button').forEach(n => n.classList.toggle('active', n.dataset.goto === String(level)));
+        $('#progressText').textContent = `${level} / ${TOTAL}`;
+        $('#progressFill').style.width = `${(level / TOTAL) * 100}%`;
+        if (opts.announce) notify(`进入第${level}关：${TITLES[level]}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // ===== 第 1 关 =====
+      function renderEmoCards() {
+        const host = $('#emoCards');
+        host.innerHTML = '';
+        EMOTIONS.forEach(e => {
+          const card = document.createElement('div');
+          card.className = `emo-card ${e.cls}`;
+          card.dataset.emotion = e.name;
+          card.innerHTML =
+            `<span class="big">${e.emoji}</span>` +
+            `<strong>${e.name}</strong>` +
+            `<small>${e.desc}</small>` +
+            `<span class="read-tag"></span>` +
+            `<button type="button" class="mini-speak" data-read="${e.name}">🔊 听老师读</button>`;
+          host.appendChild(card);
+        });
+      }
+
+      // ===== 第 2 关 =====
+      function renderS2() {
+        if (s2Index >= SITUATIONS.length) {
+          $('#s2emoji').textContent = '🎉';
+          $('#s2situation').textContent = '都答完啦！';
+          $('#s2prompt').textContent = '四个情境都看过了';
+          $('#s2choices').innerHTML = '';
+          gate(2, true);
+          return;
+        }
+        const sit = SITUATIONS[s2Index];
+        $('#s2emoji').textContent = sit.emoji;
+        $('#s2situation').textContent = sit.text;
+        $('#s2prompt').textContent = `猜一猜：他现在是什么感觉？`;
+        const box = $('#s2choices');
+        box.innerHTML = '';
+        EMOTIONS.forEach(e => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'choice';
+          b.dataset.emotion = e.name;
+          b.innerHTML = `<span class="emoji">${e.emoji}</span><strong>${e.name}</strong>`;
+          box.appendChild(b);
+        });
+        const fb = $('#s2feedback');
+        if (fb) fb.textContent = '';
+      }
+
+      function s2answer(emotion, revealed) {
+        const sit = SITUATIONS[s2Index];
+        if (s2Solved[s2Index]) return;
+        s2Solved[s2Index] = true;
+        const btn = $$('#s2choices .choice').find(el => el.dataset.emotion === sit.answer);
+        if (btn) btn.classList.add(revealed ? 'revealed' : 'correct');
+        $('#s2feedback').textContent = revealed
+          ? `答案是「${sit.answer}」。他正在${sit.answer}。`
+          : `对啦！他正在「${sit.answer}」。`;
+        if (!revealed) notify(`情境「${sit.text}」答对了：${sit.answer}`);
+        else notify(`老师在情境「${sit.text}」公布了答案：${sit.answer}`);
+        if (s2Index + 1 >= SITUATIONS.length) {
+          gate(2, true);
+          notify('第2关完成：四个情境都答完了', '', true);
+        }
+        // 稍等一下再进下一题，让孩子看清反馈。
+        window.clearTimeout(s2AdvanceTimer);
+        s2AdvanceTimer = window.setTimeout(() => {
+          s2Index += 1;
+          renderS2();
+        }, 1100);
+      }
+
+      function s2wrong(emotion) {
+        const sit = SITUATIONS[s2Index];
+        if (s2Solved[s2Index]) return;
+        const btn = $$('#s2choices .choice').find(el => el.dataset.emotion === emotion);
+        if (btn) {
+          btn.classList.add('wrongshake');
+          window.setTimeout(() => btn.classList.remove('wrongshake'), 400);
+        }
+        if (!s2WrongSets[s2Index].has(emotion)) {
+          s2WrongSets[s2Index].add(emotion);
+          $('#s2feedback').textContent = sit.wrongHint;
+          notify(`情境「${sit.text}」孩子选了「${emotion}」，还没答对`);
+          if (!s2Helped[s2Index] && s2WrongSets[s2Index].size >= 2) {
+            s2Helped[s2Index] = true;
+            notify(`情境「${sit.text}」已经试错${s2WrongSets[s2Index].size}次，请老师给一点线索，先不要直接说答案`, '', true);
+          }
+        } else {
+          $('#s2feedback').textContent = '这个你刚才试过啦，再换一个看看。';
+        }
+      }
+
+      // ===== 第 3 关 =====
+      function renderS3() {
+        const emoHost = $('#s3emotions');
+        const sigHost = $('#s3signals');
+        emoHost.innerHTML = '';
+        sigHost.innerHTML = '';
+        PAIRS.forEach(p => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip';
+          c.dataset.kind = 'emotion';
+          c.dataset.value = p.emotion;
+          c.innerHTML = `<span class="emoji">${p.emoji}</span><span>${p.emotion}</span>`;
+          if (s3Matched.has(p.emotion)) c.classList.add('matched');
+          emoHost.appendChild(c);
+        });
+        shuffle(PAIRS).forEach(p => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip';
+          c.dataset.kind = 'signal';
+          c.dataset.value = p.signal;
+          c.innerHTML = `<span class="emoji">${p.sigEmoji}</span><span>${p.signal}</span>`;
+          if (s3Matched.has(p.emotion)) c.classList.add('matched');
+          sigHost.appendChild(c);
+        });
+        s3Pending = null;
+      }
+
+      function s3signalOf(emotion) {
+        const p = PAIRS.find(x => x.emotion === emotion);
+        return p ? p.signal : '';
+      }
+      function s3emotionOf(signal) {
+        const p = PAIRS.find(x => x.signal === signal);
+        return p ? p.emotion : '';
+      }
+
+      function s3pair(a, b) {
+        const emo = a.dataset.kind === 'emotion' ? a.dataset.value : b.dataset.value;
+        const sig = a.dataset.kind === 'signal' ? a.dataset.value : b.dataset.value;
+        const correctSig = s3signalOf(emo);
+        if (sig === correctSig) {
+          s3Matched.add(emo);
+          a.classList.remove('selected');
+          b.classList.remove('selected');
+          a.classList.add('matched');
+          b.classList.add('matched');
+          s3Pending = null;
+          $('#s3feedback').textContent = `对啦：「${emo}」的时候，身体会「${sig}」。`;
+          notify(`第3关配对成功：${emo} → ${sig}`);
+          if (s3Matched.size >= PAIRS.length) {
+            gate(3, true);
+            notify('第3关完成：四种感觉都配上了身体信号', '', true);
+          }
+        } else {
+          const key = `${emo}|${sig}`;
+          if (!s3WrongPairs.has(key)) {
+            s3WrongPairs.add(key);
+            $('#s3feedback').textContent = '好像不是这一对，再想想身体会怎么提醒你。';
+            notify(`第3关配对「${emo}」和「${sig}」没对上，再试试`);
+            if (!s3Helped && s3WrongPairs.size >= 2) {
+              s3Helped = true;
+              notify('第3关已经连错2次，请老师给一点身体信号的线索，先不要直接说答案', '', true);
+            }
+          } else {
+            $('#s3feedback').textContent = '这一对你试过啦，换一对试试。';
+          }
+          a.classList.add('wrongshake');
+          b.classList.add('wrongshake');
+          window.setTimeout(() => { a.classList.remove('wrongshake'); b.classList.remove('wrongshake'); }, 400);
+          a.classList.remove('selected');
+          b.classList.remove('selected');
+          s3Pending = null;
+        }
+      }
+
+      function s3reveal(emotion) {
+        const sig = s3signalOf(emotion);
+        if (!sig) return false;
+        if (s3Matched.has(emotion)) return true;
+        s3Matched.add(emotion);
+        $$('#s3emotions .chip').forEach(c => {
+          if (c.dataset.value === emotion) { c.classList.add('matched'); c.classList.remove('selected'); }
+        });
+        $$('#s3signals .chip').forEach(c => {
+          if (c.dataset.value === sig) { c.classList.add('matched'); c.classList.remove('selected'); }
+        });
+        s3Pending = null;
+        $('#s3feedback').textContent = `老师配好了：「${emotion}」的时候，身体会「${sig}」。`;
+        notify(`老师公布了第3关的配对：${emotion} → ${sig}`);
+        if (s3Matched.size >= PAIRS.length) {
+          gate(3, true);
+          notify('第3关完成：四种感觉都配上了身体信号', '', true);
+        }
+        return true;
+      }
+
+      // ===== 第 4 关 =====
+      function renderS4() {
+        const host = $('#s4rows');
+        host.innerHTML = '';
+        const order = ['开心', '难过', '生气', '害怕'];
+        order.forEach(emotion => {
+          const e = EMOTIONS.find(x => x.name === emotion);
+          const row = document.createElement('div');
+          row.className = 'action-row';
+          row.dataset.emotion = emotion;
+          const chosen = s4Chosen[emotion] || '';
+          row.innerHTML =
+            `<div class="row-title"><span class="emoji">${e.emoji}</span><span>${emotion}的时候，我可以</span></div>` +
+            `<div class="opts">` +
+            ACTIONS[emotion].map(a =>
+              `<button type="button" class="opt${chosen === a ? ' chosen' : ''}" data-action="${a}">${a}</button>`
+            ).join('') +
+            `</div>`;
+          if (chosen) row.classList.add('done');
+          host.appendChild(row);
+        });
+        syncTemplate();
+      }
+
+      function s4choose(emotion, action) {
+        if (s4Chosen[emotion]) return; // 每类只选一个，已选的不再覆盖
+        s4Chosen[emotion] = action;
+        const row = $(`#s4rows .action-row[data-emotion="${emotion}"]`);
+        if (row) {
+          row.classList.add('done');
+          $$('.opt', row).forEach(b => b.classList.toggle('chosen', b.dataset.action === action));
+        }
+        notify(`第4关：${emotion}的时候选了「${action}」`);
+        if (Object.keys(s4Chosen).length >= EMOTIONS.length) {
+          $('#s4template').hidden = false;
+          $('#s4feedback').textContent = '都选好啦！下面可以试着跟老师说一句话。';
+          $('.next-button', stageEl(4)).disabled = false;
+          notify('第4关：四种感觉都挑好了自己的做法', '', true);
+        }
+      }
+
+      function syncTemplate() {
+        $('#tplFeeling').textContent = tplPicked.feeling || '____';
+        $('#tplBecause').textContent = tplPicked.because || '____';
+        $('#tplWant').textContent = tplPicked.want || '____';
+      }
+
+      function renderTplGroups() {
+        $$('.grp-opts').forEach(grp => {
+          const kind = grp.dataset.tpl;
+          const list = kind === 'feeling' ? TPL_FEELINGS : kind === 'because' ? TPL_BECAUSES : TPL_WANTS;
+          grp.innerHTML = '';
+          list.forEach(v => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'gopt' + (tplPicked[kind] === v ? ' chosen' : '');
+            b.dataset.tpl = kind;
+            b.dataset.value = v;
+            b.textContent = v;
+            grp.appendChild(b);
+          });
+        });
+      }
+
+      function tplSentence() {
+        const f = tplPicked.feeling, b = tplPicked.because, w = tplPicked.want;
+        if (!f || !b || !w) return '';
+        return `我现在觉得${f}，因为${b}，我想要${w}。`;
+      }
+
+      // ===== 指令：hint / reveal =====
+      function cmdHint(v) {
+        if (level === 1) {
+          const card = $$('#emoCards .emo-card').find(el => el.dataset.emotion === v) ||
+                       $('#emoCards .emo-card');
+          if (!card) return false;
+          $$('#emoCards .emo-card').forEach(el => el.classList.remove('lit'));
+          card.classList.add('lit');
+          card.scrollIntoView({ block: 'nearest' });
+          notify(`老师提示：先看看「${card.dataset.emotion}」这张卡`);
+          return true;
+        }
+        if (level === 2) {
+          const sit = SITUATIONS[s2Index];
+          if (s2Solved[s2Index]) return false;
+          const wrong = EMOTIONS.find(e => e.name !== sit.answer && !s2WrongSets[s2Index].has(e.name));
+          const target = wrong ? wrong.name : EMOTIONS.find(e => e.name !== sit.answer).name;
+          const btn = $$('#s2choices .choice').find(el => el.dataset.emotion === target);
+          if (btn) btn.classList.add('dimmed');
+          $('#s2feedback').textContent = `先把「${target}」排除掉，再想想另外几个。`;
+          notify(`老师提示：排除「${target}」`);
+          return true;
+        }
+        if (level === 3) {
+          let emo = v;
+          if (!s3signalOf(emo)) emo = PAIRS.find(p => !s3Matched.has(p.emotion)).emotion;
+          if (!emo) return false;
+          const sig = s3signalOf(emo);
+          $$('#s3emotions .chip').forEach(c => c.classList.toggle('selected', c.dataset.value === emo && !s3Matched.has(emo)));
+          $$('#s3signals .chip').forEach(c => c.classList.toggle('selected', c.dataset.value === sig && !s3Matched.has(emo)));
+          $('#s3feedback').textContent = `想一想：「${emo}」的时候，身体会怎么样？`;
+          notify(`老师提示：看看「${emo}」该配哪个身体信号`);
+          return true;
+        }
+        if (level === 4) {
+          const undone = EMOTIONS.find(e => !s4Chosen[e.name]);
+          if (undone) {
+            const row = $(`#s4rows .action-row[data-emotion="${undone.name}"]`);
+            const opt = $('.opt', row);
+            if (!opt) return false;
+            $$('.opt.lit').forEach(o => o.classList.remove('lit'));
+            opt.classList.add('lit');
+            $('#s4feedback').textContent = `可以先给「${undone.name}」挑一个办法。`;
+            notify(`老师提示：先给「${undone.name}」挑一个办法`);
+            return true;
+          }
+          const grp = $('.grp-opts[data-tpl="feeling"]');
+          const opt = $('.gopt', grp);
+          if (!opt) return false;
+          opt.classList.add('chosen');
+          notify('老师提示：可以开始跟老师说一句话了');
+          return true;
+        }
+        return false;
+      }
+
+      function cmdReveal(v) {
+        if (level === 1) {
+          const card = $$('#emoCards .emo-card').find(el => el.dataset.emotion === v);
+          if (!card) return false;
+          card.classList.add('read');
+          const tag = $('.read-tag', card);
+          if (tag) tag.textContent = '老师来介绍 ✓';
+          notify(`老师介绍了「${v}」这张卡`);
+          return true;
+        }
+        if (level === 2) {
+          if (s2Solved[s2Index]) return true;
+          s2answer('', true);
+          return true;
+        }
+        if (level === 3) {
+          return s3reveal(v);
+        }
+        if (level === 4) {
+          // value 是一个做法时，直接替该类情绪选中；否则给「感觉」填空。
+          let found = false;
+          for (const emotion of Object.keys(ACTIONS)) {
+            if (ACTIONS[emotion].includes(v) && !s4Chosen[emotion]) {
+              s4choose(emotion, v);
+              found = true;
+            }
+          }
+          if (!found && TPL_FEELINGS.includes(v)) {
+            tplPicked.feeling = v;
+            renderTplGroups();
+            syncTemplate();
+            $('#s4feedback').textContent = `老师帮你填好了：我现在觉得${v}。`;
+            notify(`老师帮你填了「我现在觉得${v}」`);
+            return true;
+          }
+          if (!found) return false;
+          return true;
+        }
+        return false;
+      }
+
+      // 聊天页通过注入的桥接脚本调用这里：老师翻页、给提示、公布答案。
+      window.__aiteacherCmd = function ({ action, value }) {
+        try {
+          const v = String(value || '').trim();
+          const key = `${action}:${v}:${level}`;
+          if (key === lastCmd) return true;   // 幂等：重复到达不叠加副作用
+          lastCmd = key;
+          if (action === 'step') {
+            const target = parseInt(v, 10);
+            if (!(target >= 1 && target <= TOTAL)) return false;
+            go(target, { announce: true });
+            return true;
+          }
+          if (action === 'hint') return cmdHint(v);
+          if (action === 'reveal') return cmdReveal(v);
+          return false;
+        } catch (_) {
+          return false;
+        }
+      };
+
+      // ===== 完成屏 =====
+      function summaryText() {
+        const solved2 = s2Solved.filter(Boolean).length;
+        return `认识情绪听读${readCount}次；情境判断答对${solved2}/${SITUATIONS.length}个；身体信号配对${s3Matched.size}/${PAIRS.length}对；自选做法${Object.keys(s4Chosen).length}/${EMOTIONS.length}类`;
+      }
+
+      function finish() {
+        $$('.stage').forEach(n => n.classList.remove('active'));
+        const grid = $('#statGrid');
+        grid.innerHTML = '';
+        const stats = [
+          ['认识情绪', `听读 ${readCount} 次`],
+          ['情境判断', `答对 ${s2Solved.filter(Boolean).length} / ${SITUATIONS.length}`],
+          ['身体信号', `配对 ${s3Matched.size} / ${PAIRS.length}`],
+          ['自选做法', `选好 ${Object.keys(s4Chosen).length} / ${EMOTIONS.length}`],
+        ];
+        stats.forEach(([label, val]) => {
+          const d = document.createElement('div');
+          d.innerHTML = `<b>${val}</b>${label}`;
+          grid.appendChild(d);
+        });
+        $('#complete').classList.add('active');
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        notify(`完成了《我的情绪小雷达》全部四关。${summaryText()}`, '', true);
+      }
+
+      function resetAll() {
+        readCount = 0;
+        s2Index = 0;
+        for (let i = 0; i < SITUATIONS.length; i++) {
+          s2Solved[i] = false;
+          s2WrongSets[i] = new Set();
+          s2Helped[i] = false;
+        }
+        s3Matched.clear();
+        s3WrongPairs.clear();
+        s3Helped = false;
+        s3Pending = null;
+        Object.keys(s4Chosen).forEach(k => delete s4Chosen[k]);
+        tplPicked.feeling = ''; tplPicked.because = ''; tplPicked.want = '';
+        $$('.emo-card').forEach(el => el.classList.remove('read', 'lit'));
+        $$('.read-tag').forEach(el => { el.textContent = ''; });
+        $$('.next-button').forEach(el => { el.disabled = true; });
+        $$('.stage-nav button').forEach(el => el.classList.remove('done'));
+        $('#s4template').hidden = true;
+        $('#complete').classList.remove('active');
+        renderEmoCards();
+        renderS2();
+        renderS3();
+        renderS4();
+        renderTplGroups();
+      }
+
+      // ===== 事件 =====
+      $('#startButton').addEventListener('click', () => {
+        $('#startScreen').style.display = 'none';
+        $('#progressCard').hidden = false;
+        go(1, { announce: false });
+        notify('开始了《我的情绪小雷达》第1关');
+      });
+
+      $('#stageNav').addEventListener('click', event => {
+        const btn = event.target.closest('[data-goto]');
+        if (btn) go(btn.dataset.goto, { announce: true });
+      });
+
+      $('#emoCards').addEventListener('click', event => {
+        const read = event.target.closest('[data-read]');
+        if (!read) return;
+        const name = read.dataset.read;
+        const e = EMOTIONS.find(x => x.name === name);
+        const card = read.closest('.emo-card');
+        if (card) {
+          card.classList.add('read');
+          const tag = $('.read-tag', card);
+          if (tag && !tag.textContent) tag.textContent = '听过了 ✓';
+        }
+        readCount += 1;
+        notify(`点击了听老师读「${name}」`, e.read);
+      });
+
+      $('#s2choices').addEventListener('click', event => {
+        const btn = event.target.closest('.choice');
+        if (!btn) return;
+        const sit = SITUATIONS[s2Index];
+        if (btn.dataset.emotion === sit.answer) s2answer(btn.dataset.emotion, false);
+        else s2wrong(btn.dataset.emotion);
+      });
+
+      document.addEventListener('click', event => {
+        const el = event.target;
+
+        // 第 3 关：芯片点击
+        const chip = el.closest('#s3emotions .chip, #s3signals .chip');
+        if (chip) {
+          if (chip.classList.contains('matched')) return;
+          if (!s3Pending) {
+            s3Pending = chip;
+            chip.classList.add('selected');
+            return;
+          }
+          if (s3Pending === chip) {
+            chip.classList.remove('selected');
+            s3Pending = null;
+            return;
+          }
+          if (s3Pending.dataset.kind === chip.dataset.kind) {
+            s3Pending.classList.remove('selected');
+            s3Pending = chip;
+            chip.classList.add('selected');
+            return;
+          }
+          s3pair(s3Pending, chip);
+          return;
+        }
+
+        // 第 4 关：做法选项
+        const opt = el.closest('#s4rows .opt');
+        if (opt) {
+          const row = opt.closest('.action-row');
+          s4choose(row.dataset.emotion, opt.dataset.action);
+          return;
+        }
+
+        // 第 4 关：表达模板填空
+        const gopt = el.closest('.gopt');
+        if (gopt) {
+          const kind = gopt.dataset.tpl;
+          tplPicked[kind] = gopt.dataset.value;
+          renderTplGroups();
+          syncTemplate();
+          if (tplSentence()) {
+            $('#s4feedback').textContent = `拼好了：${tplSentence()}`;
+            notify(`孩子拼出了表达句：${tplSentence()}`);
+          }
+          return;
+        }
+
+        // 通用按钮
+        const speak = el.closest('[data-speak]');
+        if (speak) { notify('点击了听老师读', speak.dataset.speak); return; }
+
+        const next = el.closest('[data-next]');
+        if (next) { go(next.dataset.next, { announce: true }); return; }
+
+        if (el.closest('[data-finish]')) { finish(); return; }
+
+        if (el.closest('[data-review]')) { notify(`请老师总结今天这节情绪课：${summaryText()}`, '', true); return; }
+        if (el.closest('[data-next-plan]')) { notify(`这是今天的练习数据：${summaryText()}。请给家长 2—3 条在家就能做的情绪练习建议，说人话，别用专业术语。`, '', true); return; }
+
+        const hint = el.closest('[data-hint]');
+        if (hint) {
+          const handled = cmdHint('');
+          if (!handled) setFeedback('这里暂时不用提示啦。', false);
+          else notify(`第${level}关主动求助，请老师再给一点线索`, '', true);
+          return;
+        }
+
+        if (el.closest('[data-replay]')) {
+          if (level === 1) {
+            readCount = 0;
+            $$('.emo-card').forEach(c => c.classList.remove('read', 'lit'));
+            $$('.read-tag').forEach(t => { t.textContent = ''; });
+            notify('第1关重看');
+            return;
+          }
+          if (level === 2) {
+            for (let i = 0; i < SITUATIONS.length; i++) { s2Solved[i] = false; s2WrongSets[i] = new Set(); s2Helped[i] = false; }
+            s2Index = 0;
+            renderS2();
+            gate(2, false);
+            notify('第2关重练');
+            return;
+          }
+          if (level === 3) {
+            s3Matched.clear(); s3WrongPairs.clear(); s3Helped = false; s3Pending = null;
+            renderS3();
+            gate(3, false);
+            notify('第3关重练');
+            return;
+          }
+          if (level === 4) {
+            Object.keys(s4Chosen).forEach(k => delete s4Chosen[k]);
+            tplPicked.feeling = ''; tplPicked.because = ''; tplPicked.want = '';
+            $('#s4template').hidden = true;
+            renderS4(); renderTplGroups();
+            $('.next-button', stageEl(4)).disabled = true;
+            notify('第4关重练');
+            return;
+          }
+          return;
+        }
+
+        if (el.closest('[data-restart]')) { resetAll(); go(1, { announce: true }); return; }
+
+        // 模板按钮
+        if (el.closest('#tplSpeak')) {
+          const s = tplSentence();
+          if (!s) { $('#s4feedback').textContent = '先把三个空都挑好，就能读啦。'; return; }
+          notify('点击了听老师读表达句', s);
+          return;
+        }
+        if (el.closest('#tplSaid')) {
+          const s = tplSentence() || '我现在觉得____，因为____，我想要____';
+          $('#s4feedback').textContent = '说给老师听啦，做得很好！';
+          notify(`孩子说出了表达句：${s}`, s, true);
+          return;
+        }
+      });
+
+      // 初始化
+      renderEmoCards();
+      renderS2();
+      renderS3();
+      renderS4();
+      renderTplGroups();
+      go(1);
+    })();
+  </script>
+
+  <!-- 本课的能力清单与教学须知。公共层（提示词/路由/前端）不允许出现本课的学科内容，
+       它们只读这里。协议见 docs/material-protocol.md 第 3 节。 -->
+  <script type="application/aiteacher+json" id="aiteacher-manifest">
+  {
+    "schema": 1,
+    "commands": ["hint", "reveal", "step"],
+    "teacher_notes": "本课《我的情绪小雷达》面向自闭症、语言障碍及低龄儿童（通常在成人陪同下），教四种基本情绪的识别与自我调节，共 4 关：1 认识情绪（开心/难过/生气/害怕，看卡片听读）；2 他是什么感觉（4 个情境四选一判断）；3 身体在提醒我（情绪与身体信号配对：开心→嘴角上扬、难过→想哭、生气→握拳头、害怕→心跳变快）；4 我可以怎么做（每类情绪自选一个调节办法，末了用「我现在觉得____，因为____，我想要____」表达句说给老师听）。教学规则：1. 对孩子说话只用 1—3 个短句，一次问一个问题，说完就安静等 5 秒以上，不要追着补问题。2. 不强迫对视、不要求坐端正、不要求复述情绪名或模仿表情；点选、指认、近似回应、由成人代读都算有效参与，一律先肯定再继续。3. 孩子选错时先给温和线索（指向表情或身体信号），不要直接判错；连续试错 2 次再由老师给提示，仍不直接说答案。4. 第 2 关情境答案是固定的（玩具被拿走→生气、去没去过的地方→害怕、朋友来抱→开心、小动物生病→难过），但孩子若有合理解释也接受，不争对错。5. 第 4 关孩子挑的办法就是好办法，不评价优劣；表达句愿意说就说，不愿意就由老师或家长替他念出来，同样算完成。6. 反馈要具体（说清他刚才做了什么、身体是什么感觉），不用空泛的「真棒」。7. 若判断输入明显来自照护者，改用简短成人语言给建议。8. 本课是陪练材料，不做诊断、不承诺治疗效果；涉及情绪障碍或医疗问题建议寻求专业支持。",
+    "command_guide": {
+      "hint": "本课：在第 2 关把当前情境的一个错误情绪选项变灰排除，在第 3 关把待配的情绪与正确身体信号一起描紫框提示，在第 1/4 关给对应的情绪卡或做法按钮亮框。目标可写情绪名（开心/难过/生气/害怕）或做法名（深呼吸/找大人说/抱抱玩偶等）。",
+      "reveal": "本课：第 2 关直接标出当前情境的正确答案；第 3 关按情绪名把它的身体信号配好并打勾；第 4 关可把某做法替该情绪选中，或把情绪名填进表达句的「我现在觉得」空。目标写情绪名或做法名。",
+      "step": "本课共 4 关，值填 1—4 的阿拉伯数字。"
+    }
+  }
+  </script>
+</body>
+</html>
